@@ -35,7 +35,7 @@ class Platform:
 class Linux(Platform):
     def __init__(self):
         service_name = "autisto"
-        service_file_dir = os.path.join(os.path.expanduser("~/.config/systemd/user"))
+        service_file_dir = os.path.join("/etc/systemd/system")
         service_file_path = os.path.join(service_file_dir, f"{service_name}.service")
 
         super().__init__(
@@ -46,7 +46,7 @@ class Linux(Platform):
         )
 
     def service_active(self, quiet=False):
-        if subprocess.call(["systemctl", "--user", "is-active", "--quiet", self.service_name]) == 0:
+        if subprocess.call(["systemctl", "is-active", "--quiet", self.service_name]) == 0:
             if not quiet:
                 print("\033[92mService is active.\033[0m")
             return True
@@ -62,20 +62,21 @@ class Linux(Platform):
         with open(self.service_file_path, "w") as file:
             file.write("[Unit]\n")
             file.write("Description=Autisto systemd service\n")
-            file.write("After=network.target\n")
+            file.write("After=mongod.service\n")
             file.write("\n[Service]\n")
+            file.write("User=root\n")
             file.write("Type=simple\n")
             file.write(f"ExecStart={sys.executable} "
                        f"{os.path.join(autisto_dir, 'server.py')}\n")
             file.write("RestartSec=5\n")
             file.write("Restart=always\n")
             file.write("\n[Install]\n")
-            file.write("WantedBy=default.target\n")
+            file.write("WantedBy=multi-user.target\n")
 
         systemd_setup = [
-            ["systemctl", "--user", "enable", self.service_name],
-            ["systemctl", "--user", "daemon-reload"],
-            ["systemctl", "--user", "start", self.service_name]
+            ["systemctl", "enable", self.service_name],
+            ["systemctl", "daemon-reload"],
+            ["systemctl", "start", self.service_name]
         ]
         success = [subprocess.call(cmd) == 0 for cmd in systemd_setup]
 
@@ -83,22 +84,22 @@ class Linux(Platform):
             time.sleep(3)
             print("\n\033[92mAutisto systemd service enabled. It should be reported as active."
                   "\nClose status with 'q'.\033[0m")
-            subprocess.run(["systemctl", "status", "--user", self.service_name])
+            subprocess.run(["systemctl", "status", self.service_name])
         else:
             print("\n\033[91mAutisto systemd service set-up failed!\033[0m")
 
     def remove_service(self):
-        subprocess.run(["systemctl", "--user", "stop", self.service_name])
-        subprocess.run(["systemctl", "--user", "disable", self.service_name])
-        subprocess.run(["systemctl", "--user", "daemon-reload"])
-        subprocess.run(["systemctl", "--user", "reset-failed"])
+        subprocess.run(["systemctl", "stop", self.service_name])
+        subprocess.run(["systemctl", "disable", self.service_name])
+        subprocess.run(["systemctl", "daemon-reload"])
+        subprocess.run(["systemctl", "reset-failed"])
 
     def start_service(self):
-        subprocess.run(["systemctl", "--user", "start", self.service_name])
+        subprocess.run(["systemctl", "start", self.service_name])
 
     def stop_service(self):
         if self.service_active(quiet=True):
-            return subprocess.call(["systemctl", "--user", "stop", self.service_name]) == 0
+            return subprocess.call(["systemctl", "stop", self.service_name]) == 0
         else:
             return False
 

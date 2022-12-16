@@ -4,7 +4,7 @@ from autisto.utils import *
 from datetime import datetime
 from autisto.finances import FinanceModule
 
-START_OF_TIME = 1900
+BEGINNING_OF_TIME = datetime(1900, 1, 1)
 
 
 class SpreadSheet:
@@ -102,6 +102,10 @@ class Console:
         except ValueError:
             self._sheet.update_cell(to_1_based(row), to_1_based(self._get_col_index("Status")),
                                     f"Wrong date - must be 'DD-MM-YYYY'")
+            raise FaultyOrder
+        if datetime.now() < date or date < BEGINNING_OF_TIME:
+            self._sheet.update_cell(to_1_based(row), to_1_based(self._get_col_index("Status")),
+                                    f"Wrong date - must be after/at Jan 1, 1900 and not in the future")
             raise FaultyOrder
         return date
 
@@ -266,7 +270,7 @@ class SpendingSheet:
     def summarize(self, database):
         current_time = datetime.now()
         month_to_month_spending = {}
-        for year in range(START_OF_TIME, current_time.year+1):
+        for year in range(BEGINNING_OF_TIME.year, current_time.year+1):
             month_to_month_spending[str(year)] = {}
             for month in range(1, 13):
                 month_to_month_spending[str(year)][str(month)] = 0.
