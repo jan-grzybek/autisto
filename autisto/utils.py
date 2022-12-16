@@ -1,7 +1,10 @@
 import os
+import sys
 import json
 import uuid
-from daemons import get_platform
+import pymongo
+from autisto.daemons import get_platform
+from autisto.database import Database
 
 CONFIG_DIR = "~/.config/autisto/"
 CONFIG_FILE_NAME = "config.json"
@@ -49,7 +52,23 @@ def get_config():
 
 
 def do_config():
-    print("Hello. Looks like Autisto personal accountant has not been set up yet.")
+    print("Attempting connection to mongoDB ...")
+    try:
+        for _ in Database("mongodb://localhost:27017/").get_documents():
+            break
+        print("Success.")
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        print(e)
+        print("Is mongoDB installed on the system?")
+        sys.exit(1)
+    print("\nChecking for root privileges ...")
+    if os.geteuid() == 0:
+        print("Success.")
+    else:
+        print("Please rerun with sudo.")
+        print("   sudo autisto")
+        sys.exit(1)
+    print("\nHello. Looks like Autisto personal accountant has not been set up yet.")
     print("Have you already set up a Google Service Account? If not, please first follow instructions here: "
           "https://docs.gspread.org/en/latest/oauth2.html")
     print("\nPlease provide path to the .json file with Service Account credentials.")
@@ -70,13 +89,16 @@ def do_config():
     os.makedirs(os.path.expanduser(CONFIG_DIR), exist_ok=True)
     with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "w") as config_file:
         config_file.write(json.dumps(config))
-    print(f"\nThank you. Your config has been saved under {CONFIG_DIR}\n")
-    print("Setting system daemon ...")
+    print(f"\nThank you. Your config has been saved under {CONFIG_DIR}")
+    print("\nSetting system daemon ...")
     get_platform().set_service()
+    print("All done.")
+    sys.exit(0)
 
 
 def check_setup():
     try:
         get_config()
+        get_platform().service_active()
     except FileNotFoundError:
         do_config()

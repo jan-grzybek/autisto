@@ -11,7 +11,7 @@ def load_requirements(file_name):
 if __name__ == "__main__":
     entry_points = {
         "console_scripts": [
-            "autisto = autisto.server:entry"
+            "autisto = autisto.utils:check_setup"
         ]
     }
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="autisto",
-        version="1.0rc",
+        version="1.0rc1",
         author="Jan Grzybek",
         author_email="lyre_embassy_0n@icloud.com",
         description="Basic accounting (?) program integrated with Google Sheets to fulfill my own autistic needs of "
