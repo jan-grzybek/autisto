@@ -55,10 +55,18 @@ def do_config():
     print("Attempting connection to mongoDB ...")
     try:
         for _ in Database("mongodb://localhost:27017/").get_documents():
-            pass
+            break
+        print("Success.")
     except pymongo.errors.ServerSelectionTimeoutError as e:
         print(e)
         print("Is mongoDB installed on the system?")
+        sys.exit(1)
+    print("\nChecking for root privileges ...")
+    if os.geteuid() == 0:
+        print("Success.")
+    else:
+        print("Please rerun with sudo.")
+        print("   sudo autisto")
         sys.exit(1)
     print("\nHello. Looks like Autisto personal accountant has not been set up yet.")
     print("Have you already set up a Google Service Account? If not, please first follow instructions here: "
