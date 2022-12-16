@@ -2,8 +2,9 @@ import os
 import sys
 import json
 import uuid
+import pymongo
 from autisto.daemons import get_platform
-from pymongo import MongoClient
+from autisto.database import Database
 
 CONFIG_DIR = "~/.config/autisto/"
 CONFIG_FILE_NAME = "config.json"
@@ -51,7 +52,15 @@ def get_config():
 
 
 def do_config():
-    print("Hello. Looks like Autisto personal accountant has not been set up yet.")
+    print("Attempting connection to mongoDB ...")
+    try:
+        for _ in Database("mongodb://localhost:27017/").get_documents():
+            pass
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        print(e)
+        print("Is mongoDB installed on the system?")
+        sys.exit(1)
+    print("\nHello. Looks like Autisto personal accountant has not been set up yet.")
     print("Have you already set up a Google Service Account? If not, please first follow instructions here: "
           "https://docs.gspread.org/en/latest/oauth2.html")
     print("\nPlease provide path to the .json file with Service Account credentials.")
@@ -73,9 +82,6 @@ def do_config():
     with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "w") as config_file:
         config_file.write(json.dumps(config))
     print(f"\nThank you. Your config has been saved under {CONFIG_DIR}")
-    print("\nAttempting connection to mongoDB ...")
-    _ = MongoClient("mongodb://localhost:27017/")
-    print("Done.")
     print("\nSetting system daemon ...")
     get_platform().set_service()
     print("All done.")
