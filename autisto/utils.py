@@ -1,7 +1,8 @@
 import os
+import sys
 import json
 import uuid
-from daemons import get_platform
+from autisto.daemons import get_platform
 
 CONFIG_DIR = "~/.config/autisto/"
 CONFIG_FILE_NAME = "config.json"
@@ -73,10 +74,12 @@ def do_config():
     print(f"\nThank you. Your config has been saved under {CONFIG_DIR}\n")
     print("Setting system daemon ...")
     get_platform().set_service()
+    sys.exit(0)
 
 
 def check_setup():
     try:
         get_config()
+        get_platform().service_active()
     except FileNotFoundError:
         do_config()

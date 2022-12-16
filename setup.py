@@ -11,7 +11,7 @@ def load_requirements(file_name):
 if __name__ == "__main__":
     entry_points = {
         "console_scripts": [
-            "autisto = autisto.server:entry"
+            "autisto = autisto.utils:check_setup"
         ]
     }
 

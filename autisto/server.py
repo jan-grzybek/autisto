@@ -1,7 +1,7 @@
 import time
-from spreadsheet import SpreadSheet
-from database import Database
-from utils import check_setup
+from autisto.spreadsheet import SpreadSheet
+from autisto.database import Database
+from autisto.utils import check_setup
 
 REFRESH_PERIOD = 15 * 60
 
@@ -23,11 +23,6 @@ class Server:
             time.sleep(REFRESH_PERIOD - (time.time() - start))
 
 
-def entry():
-    check_setup()
+if __name__ == "__main__":
     server = Server()
     server.run()
-
-
-if __name__ == "__main__":
-    entry()

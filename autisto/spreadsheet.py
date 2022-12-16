@@ -1,8 +1,8 @@
 import gspread
 from bson.errors import InvalidId
-from utils import *
+from autisto.utils import *
 from datetime import datetime
-from finances import FinanceModule
+from autisto.finances import FinanceModule
 
 START_OF_TIME = 1900
 
