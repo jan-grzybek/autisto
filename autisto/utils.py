@@ -3,6 +3,7 @@ import sys
 import json
 import uuid
 from autisto.daemons import get_platform
+from pymongo import MongoClient
 
 CONFIG_DIR = "~/.config/autisto/"
 CONFIG_FILE_NAME = "config.json"
@@ -71,9 +72,13 @@ def do_config():
     os.makedirs(os.path.expanduser(CONFIG_DIR), exist_ok=True)
     with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "w") as config_file:
         config_file.write(json.dumps(config))
-    print(f"\nThank you. Your config has been saved under {CONFIG_DIR}\n")
-    print("Setting system daemon ...")
+    print(f"\nThank you. Your config has been saved under {CONFIG_DIR}")
+    print("\nAttempting connection to mongoDB ...")
+    _ = MongoClient("mongodb://localhost:27017/")
+    print("Done.")
+    print("\nSetting system daemon ...")
     get_platform().set_service()
+    print("All done.")
     sys.exit(0)
 
 
