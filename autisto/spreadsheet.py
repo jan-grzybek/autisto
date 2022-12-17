@@ -13,8 +13,11 @@ class SpreadSheet:
         gc = gspread.service_account_from_dict(config["credentials"])
         name = f"Inventory {config['spreadsheet_uuid']}"
         try:
+            print(config['spreadsheet_uuid'])
+            print(config['user_email'])
             self._file = gc.open(name)
         except gspread.exceptions.SpreadsheetNotFound:
+            print(config['spreadsheet_uuid'])
             self._file = gc.create(name)
             self._file.add_worksheet("Console", rows=1000, cols=26)
             self._file.add_worksheet("Inventory", rows=1000, cols=26)
