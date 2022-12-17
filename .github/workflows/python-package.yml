@@ -51,9 +51,7 @@ jobs:
         credentials.json
         $EMAIL
         EOF
-        sudo systemctl stop autisto
-        sleep 1
-        sudo /usr/bin/python /usr/local/lib/python3.10/dist-packages/autisto/server.py
+        sleep 5
     - name: Test with pytest
       run: |
         pytest

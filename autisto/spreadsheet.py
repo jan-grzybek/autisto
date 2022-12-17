@@ -1,4 +1,3 @@
-import uuid
 import gspread
 from bson.errors import InvalidId
 from autisto.utils import *
@@ -12,7 +11,7 @@ class SpreadSheet:
     def __init__(self):
         config = get_config()
         gc = gspread.service_account_from_dict(config["credentials"])
-        name = f"Inventory {uuid.uuid4()}"
+        name = f"Inventory {config['spreadsheet_uuid']}"
         try:
             self._file = gc.open(name)
         except gspread.exceptions.SpreadsheetNotFound:
