@@ -14,9 +14,10 @@ jobs:
         env:
           CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         run: |
-          sudo python -m pip install --upgrade pip
-          sudo python -m pip install gspread
-          sudo python tests/clean_up.py "$CREDENTIALS"
+          python -m pip install --upgrade pip
+          python -m pip install gspread
+          ls
+          python tests/clean_up.py "$CREDENTIALS"
 
   test:
     runs-on: ubuntu-22.04
