@@ -46,7 +46,7 @@ jobs:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
       run: |
-        sudo python tests/clean_up.py
+        sudo python tests/clean_up.py "$CREDENTIALS"
         export REFRESH_PERIOD=5
         echo "$CREDENTIALS" > credentials.json 
         sudo autisto <<EOF
