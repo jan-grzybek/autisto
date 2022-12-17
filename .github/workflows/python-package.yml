@@ -53,7 +53,7 @@ jobs:
         EOF
         sudo systemctl stop autisto
         sleep 1
-        /usr/bin/python /usr/local/lib/python3.10/dist-packages/autisto/server.py
+        sudo /usr/bin/python /usr/local/lib/python3.10/dist-packages/autisto/server.py
     - name: Test with pytest
       run: |
         pytest
