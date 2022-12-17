@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +23,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc |  gpg --dearmor | sudo tee /usr/share/keyrings/mongodb.gpg > /dev/null
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt update
+        sudo apt install mongodb-org
+        sudo systemctl enable mongod
+        sudo systemctl start mongod
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
