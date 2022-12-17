@@ -10,14 +10,14 @@ jobs:
   clean_up:
     runs-on: ubuntu-22.04
     steps:
-      - name: Remove junk
-        env:
-          CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install gspread
-          ls
-          python tests/clean_up.py "$CREDENTIALS"
+    - uses: actions/checkout@v3
+    - name: Remove junk
+      env:
+        CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install gspread
+        python tests/clean_up.py "$CREDENTIALS"
 
   test:
     runs-on: ubuntu-22.04
