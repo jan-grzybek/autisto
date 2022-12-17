@@ -41,7 +41,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Build Autisto .whl and install
       run: |
-        python setup.py bdist_wheel
+        sudo python setup.py bdist_wheel
         sudo python -m pip install dist/*
     - name: Set up Autisto
       env:
