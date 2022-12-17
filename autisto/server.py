@@ -1,9 +1,13 @@
+import os
 import time
 from autisto.spreadsheet import SpreadSheet
 from autisto.database import Database
 from autisto.utils import check_setup
 
-REFRESH_PERIOD = 15 * 60
+try:
+    REFRESH_PERIOD = int(os.environ["REFRESH_PERIOD"])
+except KeyError:
+    REFRESH_PERIOD = 15 * 60
 
 
 class Server:
@@ -20,7 +24,7 @@ class Server:
             self.db.execute_orders(self.ss.console.get_orders())
             self.ss.inventory.summarize(self.db)
             self.ss.spending.summarize(self.db)
-            time.sleep(REFRESH_PERIOD - (time.time() - start))
+            time.sleep(max(0., REFRESH_PERIOD - (time.time() - start)))
 
 
 if __name__ == "__main__":
