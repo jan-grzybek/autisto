@@ -52,6 +52,7 @@ jobs:
         "$EMAIL"
         EOF
         sleep 15
+        sudo systemctl status autisto
     - name: Test with pytest
       run: |
         pytest
