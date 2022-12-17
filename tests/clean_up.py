@@ -6,8 +6,10 @@ import gspread
 def clean_up():
     gc = gspread.service_account_from_dict(json.loads(sys.argv[1]))
     for title in [sh.title for sh in gc.openall()]:
-        print(title)
-        gc.del_spreadsheet(title)
+        try:
+            gc.del_spreadsheet(title)
+        except gspread.exceptions.APIError:
+            pass
 
 
 if __name__ == "__main__":
