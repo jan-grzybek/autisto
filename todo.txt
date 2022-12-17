@@ -1,3 +1,0 @@
-backup cron
-pypi release
-github actions testing
