@@ -5,6 +5,10 @@ from datetime import datetime
 from autisto.finances import FinanceModule
 
 BEGINNING_OF_TIME = datetime(1900, 1, 1)
+CONSOLE_COLUMN_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
+                        "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
+CONSOLE_START_ROW = 2
+CONSOLE_START_COL = 1
 
 
 class SpreadSheet:
@@ -32,11 +36,9 @@ class SpreadSheet:
 class Console:
     def __init__(self, spreadsheet, database):
         self._sheet = spreadsheet.worksheet("Console")
-        self._start_row = 2
-        self._start_col = 1
-        self._column_names = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]",
-                              "Price [PLN]", "Item name", "Category", "Life expectancy [months]",
-                              "Done? <Y>", "", "Status"]
+        self._start_row = CONSOLE_START_ROW
+        self._start_col = CONSOLE_START_COL
+        self._column_names = CONSOLE_COLUMN_NAMES
         self._orders = []
         self.db = database
 
@@ -169,7 +171,7 @@ class Console:
             identifier=identifier,
             quantity=self._get_quantity(row, values[self._column_names.index("Quantity")]),
             date=self._get_date(row, values[self._column_names.index("Date of purchase [DD-MM-YYYY]")]),
-            price=self._get_price(row, values[self._column_names.index("Price [PLN]")]),
+            price=self._get_price(row, values[self._column_names.index("Unit price [PLN]")]),
             item_name=item_name,
             category=category,
             life_expectancy=life_expectancy
@@ -179,7 +181,7 @@ class Console:
         if values[self._column_names.index("Date of purchase [DD-MM-YYYY]")] != "":
             self._sheet.update_cell(to_1_based(row), to_1_based(self._get_col_index("Status")),
                                     "Cannot remove by date")
-        elif values[self._column_names.index("Price [PLN]")] != "":
+        elif values[self._column_names.index("Unit price [PLN]")] != "":
             self._sheet.update_cell(to_1_based(row), to_1_based(self._get_col_index("Status")),
                                     "Cannot remove by price")
         elif values[self._column_names.index("Item name")] != "":

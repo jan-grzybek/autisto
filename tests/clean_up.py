@@ -8,8 +8,10 @@ def clean_up():
     for title in [sh.title for sh in gc.openall()]:
         try:
             gc.del_spreadsheet(title)
+            print(f"Deleted spreadsheet '{title}'")
         except gspread.exceptions.APIError:
             pass
+    print("DONE.")
 
 
 if __name__ == "__main__":

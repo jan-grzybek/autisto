@@ -20,6 +20,7 @@ jobs:
         python tests/clean_up.py "$CREDENTIALS"
 
   test:
+    needs: clean_up
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
