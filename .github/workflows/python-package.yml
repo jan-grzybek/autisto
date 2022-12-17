@@ -46,9 +46,7 @@ jobs:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
       run: |
-        cat >> credentials.json << EOF
-        "$CREDENTIALS"
-        EOF
+        echo "$CREDENTIALS" > credentials.json 
         sudo autisto <<EOF
         credentials.json
         "$EMAIL"
