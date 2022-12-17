@@ -21,4 +21,3 @@ def test_column_titling(spreadsheet):
     row_values = spreadsheet.worksheet("Console").row_values(CONSOLE_START_ROW)[CONSOLE_START_COL:]
     for i, col_name in enumerate(CONSOLE_COLUMN_NAMES):
         assert row_values[i] == col_name
-            
