@@ -57,4 +57,4 @@ jobs:
         sleep 5
     - name: Test with pytest
       run: |
-        pytest
+        sudo pytest
