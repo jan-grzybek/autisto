@@ -1,6 +1,8 @@
 import os
 import setuptools
 
+VERSION = "1.0rc2"
+
 
 def load_requirements(file_name):
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), file_name)) as f:
@@ -39,7 +41,7 @@ if __name__ == "__main__":
 
     setuptools.setup(
         name="autisto",
-        version="1.0rc1",
+        version=VERSION,
         author="Jan Grzybek",
         author_email="lyre_embassy_0n@icloud.com",
         description="Basic accounting (?) program integrated with Google Sheets to fulfill my own autistic needs of "
