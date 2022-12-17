@@ -49,7 +49,7 @@ jobs:
         echo "$CREDENTIALS" > credentials.json 
         sudo autisto <<EOF
         credentials.json
-        "$EMAIL"
+        $EMAIL
         EOF
         sudo systemctl stop autisto
         sleep 1
