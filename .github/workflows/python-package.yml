@@ -40,7 +40,7 @@ jobs:
     - name: Create Autisto .whl and install
       run: |
         python setup.py bdist_wheel
-        python -m pip install dist/*
+        sudo python -m pip install dist/*
     - name: Set up Autisto
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
