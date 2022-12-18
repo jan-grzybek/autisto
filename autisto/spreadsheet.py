@@ -258,12 +258,12 @@ class InventorySheet:
                 document["item_name"],
                 document["quantity"],
                 document["life_expectancy_months"],
-                round(total_value / document["quantity"], 2),
-                round(total_value, 2),
-                round(depreciation, 2)
+                "{:.2f}".format(round(total_value / document["quantity"], 2)),
+                "{:.2f}".format(round(total_value, 2)),
+                "{:.2f}".format(round(depreciation, 2))
             ])
-        summary_table[0][-2] = round(summary_table[0][-2], 2)
-        summary_table[0][-1] = round(summary_table[0][-1], 2)
+        summary_table[0][-2] = "{:.2f}".format(round(summary_table[0][-2], 2))
+        summary_table[0][-1] = "{:.2f}".format(round(summary_table[0][-1], 2))
         self._sheet.update(f"B2:I{to_1_based(len(summary_table))}", summary_table)
 
 
@@ -297,9 +297,9 @@ class SpendingSheet:
         for year in reversed(range(most_distant_year_observed, current_time.year + 1)):
             if year == current_time.year:
                 for month in reversed(range(1, current_time.month + 1)):
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+                    summary_table.append([year, month, "{:.2f}".format(month_to_month_spending[str(year)][str(month)])])
             else:
                 for month in reversed(range(1, 13)):
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+                    summary_table.append([year, month, "{:.2f}".format(month_to_month_spending[str(year)][str(month)])])
 
         self._sheet.update(f"B{self._start_row}:D{to_1_based(len(summary_table))}", summary_table)
