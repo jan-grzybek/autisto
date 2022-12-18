@@ -53,7 +53,6 @@ jobs:
         $EMAIL
         $REFRESH_PERIOD
         EOF
-        sudo cat /root/.config/autisto/config.json
         sleep 5
     - name: Test with pytest
       run: |
