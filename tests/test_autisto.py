@@ -144,14 +144,13 @@ def test_adding(spreadsheet):
     time.sleep(REFRESH_PERIOD + 10)
     inventory = spreadsheet.worksheet("Inventory")
     total_value = item_data["Quantity"] * float(item_data["Unit price [PLN]"].replace(",", "."))
-    assert total_value == inventory.cell(to_1_based(START_ROW), START_COL + len(INVENTORY_COL_NAMES)).value
+    assert total_value == inventory.cell(
+        to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value
     row_values = inventory.row_values[to_1_based(START_ROW) + 2]
     for i, col_name in enumerate(INVENTORY_COL_NAMES):
         if col_name in ["Category", "Item name", "Quantity", "Life expectancy [months]"]:
             assert item_data[col_name] == row_values[i + START_ROW]
         elif col_name == "Average unit value [PLN]":
             assert float(item_data["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
-        elif col_name == "Total value [PLN]":
-            assert total_value == float(row_values[i + START_ROW])
         elif col_name == "Depreciation [PLN]":
             assert 0 == float(row_values[i + START_ROW])
