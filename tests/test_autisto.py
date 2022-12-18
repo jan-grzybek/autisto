@@ -175,6 +175,8 @@ def test_appending(spreadsheet):
 
     assert "3" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
+    assert 0. < float(inventory.cell(
+        to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Depreciation [PLN]")).value)
 
 
 @pytest.mark.order(6)
@@ -190,6 +192,9 @@ def test_removing(spreadsheet):
     time.sleep(REFRESH_PERIOD + 10)
     assert "1" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
+    total_value = float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
+    assert total_value == float(inventory.cell(
+        to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
 
 
 @pytest.mark.order(7)
