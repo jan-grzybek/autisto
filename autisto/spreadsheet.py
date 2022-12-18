@@ -248,7 +248,7 @@ class InventorySheet:
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
-        for document in database.get_documents():
+        for document in database.get_assets():
             total_value, depreciation = finance_module.calc(document)
             summary_table[0][-2] += total_value
             summary_table[0][-1] += depreciation
@@ -283,11 +283,12 @@ class SpendingSheet:
                 month_to_month_spending[str(year)][str(month)] = 0.
 
         most_distant_year_observed = current_time.year + 1
-        for document in database.get_documents():
-            for i, date in enumerate(document["dates_of_purchase"]):
-                purchase_date = datetime.strptime(date, "%d-%m-%Y")
-                most_distant_year_observed = min(purchase_date.year, most_distant_year_observed)
-                month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
+        for collection in [database.get_assets(), database.get_decommissioned()]:
+            for document in collection:
+                for i, date in enumerate(document["dates_of_purchase"]):
+                    purchase_date = datetime.strptime(date, "%d-%m-%Y")
+                    most_distant_year_observed = min(purchase_date.year, most_distant_year_observed)
+                    month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
 
         self._sheet.clear()
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
