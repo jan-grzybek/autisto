@@ -81,9 +81,17 @@ def do_config():
             print(e)
     print("\nPlease provide email address that you want to access spreadsheet with.")
     email = input("Email address: ")
+    print("\nWhat should be the refresh period for the spreadsheet?")
+    refresh_period = None
+    while refresh_period is None:
+        try:
+            refresh_period = int(input("Refresh period in seconds [recommended: 900]: "))
+        except ValueError:
+            continue
     config = {
         "user_email": email,
         "spreadsheet_uuid": str(uuid.uuid4()),
+        "refresh_period": refresh_period,
         "credentials": credentials
     }
     os.makedirs(os.path.expanduser(CONFIG_DIR), exist_ok=True)

@@ -3,11 +3,7 @@ import time
 from filelock import FileLock
 from autisto.spreadsheet import SpreadSheet
 from autisto.database import Database
-
-try:
-    REFRESH_PERIOD = int(os.environ["REFRESH_PERIOD"])
-except KeyError:
-    REFRESH_PERIOD = 15 * 60
+from autisto.utils import get_config
 
 
 class Server:
@@ -16,6 +12,7 @@ class Server:
         if os.path.exists(lock_path):
             os.remove(lock_path)
         self._lock = FileLock(lock_path, timeout=10)
+        self._refresh_period = get_config()["refresh_period"]
         self.ss = SpreadSheet()
         self.db = Database("mongodb://localhost:27017/")
         self.ss.init_console(self.db)
@@ -29,7 +26,7 @@ class Server:
                 self.db.execute_orders(self.ss.console.get_orders())
                 self.ss.inventory.summarize(self.db)
                 self.ss.spending.summarize(self.db)
-            time.sleep(max(0., REFRESH_PERIOD - (time.time() - start)))
+            time.sleep(max(0., self._refresh_period - (time.time() - start)))
 
 
 if __name__ == "__main__":
