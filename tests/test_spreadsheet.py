@@ -22,14 +22,14 @@ def spreadsheet():
     return gc.open(name)
 
 
-@pytest.mark.order2
+@pytest.mark.order(2)
 def test_sheets_creation(spreadsheet):
     for sheet in SHEET_NAMES:
         _ = spreadsheet.worksheet(sheet)
     assert True
 
 
-@pytest.mark.order4
+@pytest.mark.order(4)
 def test_column_titling(spreadsheet):
     sheets_to_titles = {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}
     with lock:
@@ -40,13 +40,13 @@ def test_column_titling(spreadsheet):
                 assert row_values[i] == col_name
 
 
-@pytest.mark.order1
+@pytest.mark.order(1)
 def test_server_alive():
     platform = get_platform()
     assert platform.service_active()
 
 
-@pytest.mark.order3
+@pytest.mark.order(3)
 def test_sheets_auto_clean_up(spreadsheet):
     class RandomCoordinates:
         def __init__(self):
