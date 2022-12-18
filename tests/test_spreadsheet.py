@@ -3,12 +3,15 @@ import pytest
 import random
 import string
 import gspread
+from filelock import FileLock
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 from autisto.daemons import get_platform
 
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
+
+lock = FileLock("/tmp/autisto.lock", timeout=10)
 
 
 @pytest.fixture
@@ -26,12 +29,13 @@ def test_sheets_creation(spreadsheet):
 
 
 def test_column_titling(spreadsheet):
-    for sheet, titles in \
-            {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}.items():
-        start_row = to_1_based(START_ROW) + 1 if sheet == "Inventory" else to_1_based(START_ROW)
-        row_values = spreadsheet.worksheet(sheet).row_values(start_row)[START_COL:]
-        for i, col_name in enumerate(titles):
-            assert row_values[i] == col_name
+    sheets_to_titles = {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}
+    with lock:
+        for sheet, titles in sheets_to_titles.items():
+            start_row = to_1_based(START_ROW) + 1 if sheet == "Inventory" else to_1_based(START_ROW)
+            row_values = spreadsheet.worksheet(sheet).row_values(start_row)[START_COL:]
+            for i, col_name in enumerate(titles):
+                assert row_values[i] == col_name
 
 
 def test_server_alive():
