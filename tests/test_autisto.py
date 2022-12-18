@@ -10,6 +10,7 @@ from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CO
     SPENDING_COL_NAMES
 from autisto.daemons import get_platform
 
+REFRESH_PERIOD = 60
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
 
@@ -86,7 +87,7 @@ def test_sheets_auto_clean_up(spreadsheet):
                 cells_to_litter[sheet][i].col,
                 litter[i]
             )
-    time.sleep(40)
+    time.sleep(REFRESH_PERIOD + 10)
 
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
@@ -140,7 +141,7 @@ def test_adding(spreadsheet):
                 row_values.append("")
     console.update(f"{ALPHABET[START_COL]}5:{ALPHABET[START_COL + len(CONSOLE_COL_NAMES) - 1]}5", [row_values])
 
-    time.sleep(40)
+    time.sleep(REFRESH_PERIOD + 10)
     inventory = spreadsheet.worksheet("Inventory")
     total_value = item_data["Quantity"] * float(item_data["Unit price [PLN]"].replace(",", "."))
     assert total_value == inventory.cell(to_1_based(START_ROW), START_COL + len(INVENTORY_COL_NAMES)).value

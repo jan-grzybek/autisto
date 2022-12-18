@@ -45,7 +45,7 @@ jobs:
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
-        REFRESH_PERIOD: 15
+        REFRESH_PERIOD: 60
       run: |
         echo "$CREDENTIALS" > credentials.json
         sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
