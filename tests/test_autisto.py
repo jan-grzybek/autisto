@@ -115,12 +115,12 @@ def test_sheets_auto_clean_up(spreadsheet):
 def test_adding(spreadsheet):
     console = spreadsheet.worksheet("Console")
     item_data = {
-        "Quantity": 2,
+        "Quantity": "2",
         "Date of purchase [DD-MM-YYYY]": datetime.now().strftime("%d-%m-%Y"),
         "Unit price [PLN]": "3189,99",
         "Item name": "Glock 26, 9mm",
         "Category": "Self-defense only",
-        "Life expectancy [months]": 300
+        "Life expectancy [months]": "300"
     }
     row_values = []
     for col_name in CONSOLE_COL_NAMES:
@@ -137,7 +137,7 @@ def test_adding(spreadsheet):
 
     time.sleep(REFRESH_PERIOD + 10)
     inventory = spreadsheet.worksheet("Inventory")
-    total_value = item_data["Quantity"] * float(item_data["Unit price [PLN]"].replace(",", "."))
+    total_value = int(item_data["Quantity"]) * float(item_data["Unit price [PLN]"].replace(",", "."))
     assert total_value == float(inventory.cell(
         to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
     row_values = inventory.row_values(to_1_based(START_ROW) + 2)
