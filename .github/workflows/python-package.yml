@@ -59,7 +59,7 @@ jobs:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
       run: |
-        export REFRESH_PERIOD=5
+        export REFRESH_PERIOD=15
         echo "$CREDENTIALS" > credentials.json 
         sudo autisto <<EOF
         credentials.json

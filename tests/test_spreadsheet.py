@@ -50,7 +50,7 @@ def test_sheets_auto_clean_up(spreadsheet):
                 "Her middle name is Mudbone and on top of all that; "
                 "Your mama got a glass eye with the fish in it"
             )
-    time.sleep(10)
+    time.sleep(20)
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
         for i in range(cells_to_litter_per_sheet):

@@ -11,7 +11,7 @@ def attempt_clean_up():
     while file_names is None:
         try:
             file_names = [sh.title for sh in gc.openall()]
-        except gspread.exceptions.APIError as e:
+        except gspread.exceptions.APIError:
             attempts += 1
             if attempts == 10:
                 print("Can't pull a list of existing file names, aborting ...")
@@ -26,9 +26,9 @@ def attempt_clean_up():
         for name in file_names:
             try:
                 gc.del_spreadsheet(name)
-                print(f"   deleting of {name} succeeded")
+                print(f"   of {name} succeeded")
             except gspread.exceptions.APIError:
-                print(f"   deleting of {name} failed")
+                print(f"   of {name} failed")
         print("\nDONE.")
 
 
