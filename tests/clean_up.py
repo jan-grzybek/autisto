@@ -17,13 +17,18 @@ def clean_up():
                 raise e
             print(e)
             time.sleep(15)
-    for name in file_names:
-        try:
-            gc.del_spreadsheet(name)
-            print(f"Deleted spreadsheet '{name}'")
-        except gspread.exceptions.APIError:
-            pass
-    print("DONE.")
+    if len(file_names) > 0:
+        print("\nFound following spreadsheets on the account:")
+        for name in file_names:
+            print(f"   {name}")
+        print("\nDeleting ...")
+        for name in file_names:
+            try:
+                gc.del_spreadsheet(name)
+                print(f"   {name} deleted")
+            except gspread.exceptions.APIError:
+                pass
+        print("\nDONE.")
 
 
 if __name__ == "__main__":

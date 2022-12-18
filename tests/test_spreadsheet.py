@@ -1,6 +1,7 @@
 import pytest
 import gspread
-from autisto.spreadsheet import get_config, CONSOLE_COLUMN_NAMES, CONSOLE_START_ROW, CONSOLE_START_COL
+from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
+    SPENDING_COL_NAMES
 
 
 @pytest.fixture
@@ -18,6 +19,8 @@ def test_worksheets_generation(spreadsheet):
 
 
 def test_column_titling(spreadsheet):
-    row_values = spreadsheet.worksheet("Console").row_values(CONSOLE_START_ROW)[CONSOLE_START_COL:]
-    for i, col_name in enumerate(CONSOLE_COLUMN_NAMES):
-        assert row_values[i] == col_name
+    for sheet, titles in \
+            {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}.items():
+        row_values = spreadsheet.worksheet(sheet).row_values(to_1_based(START_ROW))[START_COL:]
+        for i, col_name in enumerate(titles):
+            assert row_values[i] == col_name

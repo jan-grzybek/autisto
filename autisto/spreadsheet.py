@@ -5,10 +5,15 @@ from datetime import datetime
 from autisto.finances import FinanceModule
 
 BEGINNING_OF_TIME = datetime(1900, 1, 1)
-CONSOLE_COLUMN_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
-                        "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
-CONSOLE_START_ROW = 2
-CONSOLE_START_COL = 1
+
+START_ROW = 1
+START_COL = 1
+
+CONSOLE_COL_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
+                     "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
+INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Quantity", "Life expectancy [months]",
+                       "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]"]
+SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN]"]
 
 
 class SpreadSheet:
@@ -36,9 +41,9 @@ class SpreadSheet:
 class Console:
     def __init__(self, spreadsheet, database):
         self._sheet = spreadsheet.worksheet("Console")
-        self._start_row = CONSOLE_START_ROW
-        self._start_col = CONSOLE_START_COL
-        self._column_names = CONSOLE_COLUMN_NAMES
+        self._start_row = to_1_based(START_ROW)
+        self._start_col = START_COL
+        self._column_names = CONSOLE_COL_NAMES
         self._orders = []
         self.db = database
 
@@ -46,8 +51,8 @@ class Console:
         if not orders_only:
             self._sheet.batch_clear(["A1:A", "A1:Z2", "K1:Z"])
             self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
-            self._sheet.format("B2:Z2", {"textFormat": {"bold": True}})
-            self._sheet.update("B2:L2", [self._column_names])
+            self._sheet.format(f"B{self._start_row}:Z{self._start_row}", {"textFormat": {"bold": True}})
+            self._sheet.update(f"B{self._start_row}:L{self._start_row}", [self._column_names])
         for order in self._orders:
             self._sheet.batch_clear([f"B{order.row}:Z{order.row}"])
         self._orders = []
@@ -62,7 +67,7 @@ class Console:
             if token in ["y", "yes", "Y", "YES"]:
                 ready_rows.append(self._start_row + i)
             elif token != "":
-                self._sheet.update_cell(to_1_based(self._start_row + i), to_1_based(self._get_col_index("Status")),
+                self._sheet.update_cell(self._start_row + i + 1, to_1_based(self._get_col_index("Status")),
                                         f"Wrong confirmation token: '{confirmation_tokens[i]}' "
                                         f"(should be 'Y' instead)")
         return ready_rows
@@ -232,16 +237,16 @@ class Console:
 class InventorySheet:
     def __init__(self, spreadsheet):
         self._sheet = spreadsheet.worksheet("Inventory")
-        self._start_row = 2
-        self._start_col = 1
-        self._column_names = ["ID", "Category", "Item name", "Quantity", "Life expectancy [months]",
-                              "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]"]
+        self._start_row = to_1_based(START_ROW)
+        self._start_col = START_COL
+        self._column_names = INVENTORY_COL_NAMES
 
     def summarize(self, database):
         finance_module = FinanceModule()
         self._sheet.clear()
-        self._sheet.format("G2", {"horizontalAlignment": "RIGHT"})
-        self._sheet.format("B2:Z3", {"textFormat": {"bold": True}})
+        self._sheet.format(f"G{self._start_row}", {"horizontalAlignment": "RIGHT"})
+        self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
+        self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
         for document in database.get_documents():
             total_value, depreciation = finance_module.calc(document)
@@ -265,14 +270,14 @@ class InventorySheet:
 class SpendingSheet:
     def __init__(self, spreadsheet):
         self._sheet = spreadsheet.worksheet("Spending")
-        self._start_row = 2
-        self._start_col = 1
-        self._column_names = ["Year", "Month", "Amount spent [PLN]"]
+        self._start_row = to_1_based(START_ROW)
+        self._start_col = START_COL
+        self._column_names = SPENDING_COL_NAMES
 
     def summarize(self, database):
         current_time = datetime.now()
         month_to_month_spending = {}
-        for year in range(BEGINNING_OF_TIME.year, current_time.year+1):
+        for year in range(BEGINNING_OF_TIME.year, current_time.year + 1):
             month_to_month_spending[str(year)] = {}
             for month in range(1, 13):
                 month_to_month_spending[str(year)][str(month)] = 0.
@@ -285,14 +290,15 @@ class SpendingSheet:
                 month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
 
         self._sheet.clear()
-        self._sheet.format("B2:D2", {"textFormat": {"bold": True}})
+        self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
+        self._sheet.format(f"B{self._start_row}:D{self._start_row}", {"textFormat": {"bold": True}})
         summary_table = [self._column_names]
-        for year in reversed(range(most_distant_year_observed, current_time.year+1)):
+        for year in reversed(range(most_distant_year_observed, current_time.year + 1)):
             if year == current_time.year:
-                for month in reversed(range(1, current_time.month+1)):
+                for month in reversed(range(1, current_time.month + 1)):
                     summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
             else:
                 for month in reversed(range(1, 13)):
                     summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
 
-        self._sheet.update(f"B2:D{to_1_based(len(summary_table))}", summary_table)
+        self._sheet.update(f"B{self._start_row}:D{to_1_based(len(summary_table))}", summary_table)
