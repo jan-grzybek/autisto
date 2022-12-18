@@ -1,7 +1,13 @@
 import os
 import setuptools
 
-VERSION = "1.0rc2"
+VERSION = "1.0rc3"
+
+
+def load_readme():
+    with open(os.path.join(os.path.dirname(__file__), "README.md")) as f:
+        readme = f.read()
+    return readme
 
 
 def load_requirements(file_name):
@@ -46,6 +52,8 @@ if __name__ == "__main__":
         author_email="lyre_embassy_0n@icloud.com",
         description="Basic accounting (?) program integrated with Google Sheets to fulfill my own autistic needs of "
                     "tracking the shit owned.",
+        long_description=load_readme(),
+        long_description_content_type="text/markdown",
         entry_points=entry_points,
         license="MIT",  # some serious research ...
         install_requires=install_requires,
