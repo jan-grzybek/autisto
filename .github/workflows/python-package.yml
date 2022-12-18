@@ -54,7 +54,7 @@ jobs:
         $EMAIL
         $REFRESH_PERIOD
         EOF
-        sleep 5
+        sleep 30
     - name: Test with pytest
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CLIENT_CREDENTIALS }}
