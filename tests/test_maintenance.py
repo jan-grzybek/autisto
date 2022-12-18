@@ -86,7 +86,7 @@ def test_sheets_auto_clean_up(spreadsheet):
                 cells_to_litter[sheet][i].col,
                 litter[i]
             )
-    time.sleep(60)
+    time.sleep(20)
 
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
@@ -96,7 +96,7 @@ def test_sheets_auto_clean_up(spreadsheet):
                 if cell_coordinates.row == 1:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.col == 1 or to_1_based(START_COL) + len(
-                        CONSOLE_COL_NAMES) <= cell_coordinates.col:
+                        CONSOLE_COL_NAMES[:-2]) <= cell_coordinates.col:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.row != 2:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == litter[i]
