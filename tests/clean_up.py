@@ -21,6 +21,7 @@ def clean_up():
         print("\nFound following spreadsheets on the account:")
         for name in file_names:
             print(f"   {name}")
+        time.sleep(15)
         print("\nDeleting ...")
         for name in file_names:
             try:

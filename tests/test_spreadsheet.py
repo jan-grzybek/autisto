@@ -21,6 +21,7 @@ def test_worksheets_generation(spreadsheet):
 def test_column_titling(spreadsheet):
     for sheet, titles in \
             {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}.items():
-        row_values = spreadsheet.worksheet(sheet).row_values(to_1_based(START_ROW))[START_COL:]
+        start_row = to_1_based(START_ROW) + 1 if sheet == "Inventory" else to_1_based(START_ROW)
+        row_values = spreadsheet.worksheet(sheet).row_values(start_row)[START_COL:]
         for i, col_name in enumerate(titles):
             assert row_values[i] == col_name
