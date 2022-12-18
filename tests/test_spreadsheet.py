@@ -83,7 +83,7 @@ def test_sheets_auto_clean_up(spreadsheet):
                 cells_to_litter[sheet][i].col,
                 litter[i]
             )
-    time.sleep(20)
+    time.sleep(70)
 
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
