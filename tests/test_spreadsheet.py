@@ -1,3 +1,5 @@
+import os
+import json
 import time
 import pytest
 import random
@@ -31,7 +33,7 @@ lock = Lock()
 @pytest.fixture
 def spreadsheet():
     config = get_config()
-    gc = gspread.service_account_from_dict(config["credentials"])
+    gc = gspread.service_account_from_dict(json.loads(os.environ["CLIENT_CREDENTIALS"]))
     name = f"Inventory {config['spreadsheet_uuid']}"
     return gc.open(name)
 

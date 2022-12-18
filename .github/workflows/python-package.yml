@@ -44,11 +44,12 @@ jobs:
     - name: Set up Autisto
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
-        EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
+        CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CLIENT_CREDENTIALS }}
+        EMAIL: ${{ secrets.AUTISTO_TEST_CLIENT_EMAIL }}
         REFRESH_PERIOD: 60
       run: |
-        sleep $[ $RANDOM % 60 ]
-        echo "$CREDENTIALS" > credentials.json 
+        echo "$CREDENTIALS" > credentials.json
+        sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
         sudo autisto <<EOF
         credentials.json
         $EMAIL
