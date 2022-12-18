@@ -68,8 +68,8 @@ def test_sheets_auto_clean_up(spreadsheet):
             self.row = random.randint(1, 1000)
             self.col = random.randint(1, len(ALPHABET))
 
-    litter = ["She's got the wings and teeth of a African bat"
-              "Her middle name is Mudbone and on top of all that"
+    litter = ["She's got the wings and teeth of a African bat",
+              "Her middle name is Mudbone and on top of all that",
               "Your mama got a glass eye with the fish in it"]
     cells_to_litter = {sheet: [] for sheet in SHEET_NAMES}
     for sheet in cells_to_litter.keys():
