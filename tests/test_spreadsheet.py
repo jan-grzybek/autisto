@@ -29,7 +29,7 @@ def test_sheets_creation(spreadsheet):
     assert True
 
 
-@pytest.mark.order3
+@pytest.mark.order4
 def test_column_titling(spreadsheet):
     sheets_to_titles = {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}
     with lock:
@@ -46,7 +46,7 @@ def test_server_alive():
     assert platform.service_active()
 
 
-@pytest.mark.order4
+@pytest.mark.order3
 def test_sheets_auto_clean_up(spreadsheet):
     class RandomCoordinates:
         def __init__(self):
@@ -96,4 +96,3 @@ def test_sheets_auto_clean_up(spreadsheet):
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
             else:
                 assert False
-    test_column_titling(spreadsheet)
