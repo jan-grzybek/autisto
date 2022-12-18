@@ -7,20 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  clean_up:
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Attempt removing junk
-      env:
-        CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install gspread
-        python tests/clean_up.py "$CREDENTIALS"
-
   test:
-    needs: clean_up
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -59,7 +46,7 @@ jobs:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
       run: |
-        export REFRESH_PERIOD=15
+        export REFRESH_PERIOD=5
         echo "$CREDENTIALS" > credentials.json 
         sudo autisto <<EOF
         credentials.json

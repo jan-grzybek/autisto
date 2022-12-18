@@ -5,6 +5,7 @@ import string
 import gspread
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
+from autisto.daemons import get_platform
 
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
@@ -33,10 +34,15 @@ def test_column_titling(spreadsheet):
             assert row_values[i] == col_name
 
 
+def test_server_alive():
+    platform = get_platform()
+    assert platform.service_active()
+
+
 def test_sheets_auto_clean_up(spreadsheet):
     def get_random_cell_coordinates():
         return random.randint(1, 1000), random.randint(1, len(ALPHABET))
-    cells_to_litter_per_sheet = 2
+    cells_to_litter_per_sheet = 3
     cells_to_litter = {sheet: [] for sheet in SHEET_NAMES}
     for sheet in cells_to_litter.keys():
         for _ in range(cells_to_litter_per_sheet):
@@ -50,7 +56,8 @@ def test_sheets_auto_clean_up(spreadsheet):
                 "Her middle name is Mudbone and on top of all that; "
                 "Your mama got a glass eye with the fish in it"
             )
-    time.sleep(30)
+    time.sleep(10)
+    test_server_alive()
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
         for i in range(cells_to_litter_per_sheet):

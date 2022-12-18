@@ -13,7 +13,7 @@ def attempt_clean_up():
             file_names = [sh.title for sh in gc.openall()]
         except gspread.exceptions.APIError:
             attempts += 1
-            if attempts == 10:
+            if attempts == 3:
                 print("Can't pull a list of existing file names, aborting ...")
                 return
             time.sleep(15)
