@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
-    - name: Remove junk
+    - name: Attempt removing junk
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |

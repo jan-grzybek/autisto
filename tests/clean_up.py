@@ -4,7 +4,7 @@ import time
 import gspread
 
 
-def clean_up():
+def attempt_clean_up():
     gc = gspread.service_account_from_dict(json.loads(sys.argv[1]))
     file_names = None
     attempts = 0
@@ -14,8 +14,8 @@ def clean_up():
         except gspread.exceptions.APIError as e:
             attempts += 1
             if attempts == 10:
-                raise e
-            print(e)
+                print("Can't pull a list of existing file names, aborting ...")
+                return
             time.sleep(15)
     if len(file_names) > 0:
         print("\nFound following spreadsheets on the account:")
@@ -26,11 +26,11 @@ def clean_up():
         for name in file_names:
             try:
                 gc.del_spreadsheet(name)
-                print(f"   {name} deleted")
+                print(f"   deleting of {name} succeeded")
             except gspread.exceptions.APIError:
-                pass
+                print(f"   deleting of {name} failed")
         print("\nDONE.")
 
 
 if __name__ == "__main__":
-    clean_up()
+    attempt_clean_up()
