@@ -76,23 +76,24 @@ def test_sheets_auto_clean_up(spreadsheet):
             cell_coordinates = cells_to_litter[sheet][i]
             if sheet == "Console":
                 if cell_coordinates.row == 1:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
-                elif cell_coordinates.col == 1 or to_1_based(START_COL) + len(CONSOLE_COL_NAMES) <= cell_coordinates.col:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
+                elif cell_coordinates.col == 1 or to_1_based(START_COL) + len(
+                        CONSOLE_COL_NAMES) <= cell_coordinates.col:
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.row != 2:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == litter[i]
             elif sheet == "Inventory":
                 if cell_coordinates.row == 1 or to_1_based(START_ROW) + 2 <= cell_coordinates.row:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.col == 1 or \
                         to_1_based(START_COL) + len(INVENTORY_COL_NAMES) <= cell_coordinates.col:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
             elif sheet == "Spending":
                 if cell_coordinates.row == 1 or to_1_based(START_ROW) + 1 <= cell_coordinates.row:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.col == 1 or \
                         to_1_based(START_COL) + len(SPENDING_COL_NAMES) <= cell_coordinates.col:
-                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == ""
+                    assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
             else:
                 assert False
     test_column_titling(spreadsheet)

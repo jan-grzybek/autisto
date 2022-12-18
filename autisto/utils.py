@@ -48,7 +48,12 @@ class Order:
 
 def get_config():
     with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "r") as config_file:
-        return json.load(config_file)
+        config = json.load(config_file)
+    if "refresh_period" not in config.keys():
+        config["refresh_period"] = 900
+        with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "w") as config_file:
+            config_file.write(json.dumps(config))
+    return config
 
 
 def do_config():
