@@ -1,6 +1,5 @@
-import os
 import time
-from filelock import FileLock
+from pathlib import Path
 from autisto.spreadsheet import SpreadSheet
 from autisto.database import Database
 from autisto.utils import get_config
@@ -8,10 +7,9 @@ from autisto.utils import get_config
 
 class Server:
     def __init__(self):
-        lock_path = "/tmp/autisto.lock"
-        if os.path.exists(lock_path):
-            os.remove(lock_path)
-        self._lock = FileLock(lock_path, timeout=10)
+        self._lock_path = Path("/tmp/autisto.lock")
+        if self._lock_path.exists():
+            self._lock_path.unlink()
         self._refresh_period = get_config()["refresh_period"]
         self.ss = SpreadSheet()
         self.db = Database("mongodb://localhost:27017/")
@@ -22,10 +20,12 @@ class Server:
         print("Starting server ...")
         while True:
             start = time.time()
-            with self._lock:
+            if not self._lock_path.exists():
+                self._lock_path.touch()
                 self.db.execute_orders(self.ss.console.get_orders())
                 self.ss.inventory.summarize(self.db)
                 self.ss.spending.summarize(self.db)
+                self._lock_path.unlink()
             time.sleep(max(0., self._refresh_period - (time.time() - start)))
 
 
