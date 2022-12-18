@@ -48,13 +48,18 @@ class Order:
 
 def get_config():
     with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "r") as config_file:
-        return json.load(config_file)
+        config = json.load(config_file)
+    if "refresh_period" not in config.keys():
+        config["refresh_period"] = 900
+        with open(os.path.expanduser(os.path.join(CONFIG_DIR, CONFIG_FILE_NAME)), "w") as config_file:
+            config_file.write(json.dumps(config))
+    return config
 
 
 def do_config():
     print("Attempting connection to mongoDB ...")
     try:
-        for _ in Database("mongodb://localhost:27017/").get_documents():
+        for _ in Database("mongodb://localhost:27017/").get_assets():
             break
         print("Success.")
     except pymongo.errors.ServerSelectionTimeoutError as e:
@@ -81,9 +86,17 @@ def do_config():
             print(e)
     print("\nPlease provide email address that you want to access spreadsheet with.")
     email = input("Email address: ")
+    print("\nWhat should be the refresh period for the spreadsheet?")
+    refresh_period = None
+    while refresh_period is None:
+        try:
+            refresh_period = int(input("Refresh period in seconds [recommended: 900]: "))
+        except ValueError:
+            continue
     config = {
         "user_email": email,
         "spreadsheet_uuid": str(uuid.uuid4()),
+        "refresh_period": refresh_period,
         "credentials": credentials
     }
     os.makedirs(os.path.expanduser(CONFIG_DIR), exist_ok=True)

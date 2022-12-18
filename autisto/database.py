@@ -11,8 +11,11 @@ class Database:
         self._decommissioned = self._db["decommissioned"]
         self.ss = None
 
-    def get_documents(self):
+    def get_assets(self):
         return self._assets.find({})
+
+    def get_decommissioned(self):
+        return self._decommissioned.find({})
 
     def _add_assets(self, order):
         if order.id is None:

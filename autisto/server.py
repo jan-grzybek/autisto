@@ -1,13 +1,16 @@
 import time
+from pathlib import Path
 from autisto.spreadsheet import SpreadSheet
 from autisto.database import Database
-from autisto.utils import check_setup
-
-REFRESH_PERIOD = 15 * 60
+from autisto.utils import get_config
 
 
 class Server:
     def __init__(self):
+        self._lock_path = Path("/tmp/autisto.lock")
+        if self._lock_path.exists():
+            self._lock_path.unlink()
+        self._refresh_period = get_config()["refresh_period"]
         self.ss = SpreadSheet()
         self.db = Database("mongodb://localhost:27017/")
         self.ss.init_console(self.db)
@@ -17,10 +20,13 @@ class Server:
         print("Starting server ...")
         while True:
             start = time.time()
-            self.db.execute_orders(self.ss.console.get_orders())
-            self.ss.inventory.summarize(self.db)
-            self.ss.spending.summarize(self.db)
-            time.sleep(REFRESH_PERIOD - (time.time() - start))
+            if not self._lock_path.exists():
+                self._lock_path.touch()
+                self.db.execute_orders(self.ss.console.get_orders())
+                self.ss.inventory.summarize(self.db)
+                self.ss.spending.summarize(self.db)
+                self._lock_path.unlink()
+            time.sleep(max(0., self._refresh_period - (time.time() - start)))
 
 
 if __name__ == "__main__":

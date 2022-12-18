@@ -1,0 +1,63 @@
+name: Python package
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install mongoDB
+      run: |
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc |  gpg --dearmor | sudo tee /usr/share/keyrings/mongodb.gpg > /dev/null
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt update
+        sudo apt install mongodb-org
+        sudo systemctl enable mongod
+        sudo systemctl start mongod
+    - name: Install test dependencies
+      run: |
+        sudo python -m pip install --upgrade pip
+        sudo python -m pip install flake8 pytest wheel pytest-order
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Build Autisto .whl and install
+      run: |
+        sudo python setup.py bdist_wheel
+        sudo python -m pip install dist/*
+    - name: Set up Autisto
+      env:
+        CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+        EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
+        REFRESH_PERIOD: 60
+      run: |
+        echo "$CREDENTIALS" > credentials.json
+        sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
+        sudo autisto <<EOF
+        credentials.json
+        $EMAIL
+        $REFRESH_PERIOD
+        EOF
+        sleep 5
+    - name: Test with pytest
+      env:
+        CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+      run: |
+        echo "$CLIENT_CREDENTIALS" > client_credentials.json
+        sudo pytest tests/
