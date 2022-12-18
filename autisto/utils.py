@@ -104,7 +104,7 @@ def do_config():
         config_file.write(json.dumps(config))
     print(f"\nThank you. Your config has been saved under {CONFIG_DIR}")
     print("\nSetting system daemon ...")
-    get_platform().set_service()
+    #get_platform().set_service()
     print("All done.")
     sys.exit(0)
 
