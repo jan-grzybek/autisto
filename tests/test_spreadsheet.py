@@ -33,7 +33,8 @@ lock = Lock()
 @pytest.fixture
 def spreadsheet():
     config = get_config()
-    gc = gspread.service_account_from_dict(json.loads(os.environ["CLIENT_CREDENTIALS"]))
+    with open("client_credentials.json", "r") as client_credentials:
+        gc = gspread.service_account_from_dict(json.load(client_credentials))
     name = f"Inventory {config['spreadsheet_uuid']}"
     return gc.open(name)
 

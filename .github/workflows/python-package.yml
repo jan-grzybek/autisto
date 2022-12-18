@@ -59,4 +59,5 @@ jobs:
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CLIENT_CREDENTIALS }}
       run: |
+        echo "$CLIENT_CREDENTIALS" > client_credentials.json
         sudo pytest tests/
