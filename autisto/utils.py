@@ -59,7 +59,7 @@ def get_config():
 def do_config():
     print("Attempting connection to mongoDB ...")
     try:
-        for _ in Database("mongodb://localhost:27017/").get_documents():
+        for _ in Database("mongodb://localhost:27017/").get_assets():
             break
         print("Success.")
     except pymongo.errors.ServerSelectionTimeoutError as e:
