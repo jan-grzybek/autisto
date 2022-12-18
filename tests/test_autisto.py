@@ -6,9 +6,9 @@ import string
 import gspread
 from pathlib import Path
 from datetime import datetime
+from dateutil import relativedelta
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
-from autisto.daemons import get_platform
 
 REFRESH_PERIOD = 60
 ALPHABET = list(string.ascii_uppercase)
@@ -60,7 +60,7 @@ def test_column_titling(spreadsheet):
 
 
 @pytest.mark.order(2)
-def test_sheets_auto_clean_up(spreadsheet):
+def test_sheets_maintaining(spreadsheet):
     class RandomCoordinates:
         def __init__(self):
             self.row = random.randint(1, 1000)
@@ -111,21 +111,11 @@ def test_sheets_auto_clean_up(spreadsheet):
                 assert False
 
 
-@pytest.mark.order(4)
-def test_adding(spreadsheet):
-    console = spreadsheet.worksheet("Console")
-    item_data = {
-        "Quantity": "2",
-        "Date of purchase [DD-MM-YYYY]": datetime.now().strftime("%d-%m-%Y"),
-        "Unit price [PLN]": "3189,99",
-        "Item name": "Glock 26, 9mm",
-        "Category": "Self-defense only",
-        "Life expectancy [months]": "300"
-    }
+def add_remove_item(console, item_data, action_token):
     row_values = []
     for col_name in CONSOLE_COL_NAMES:
         if col_name == "Action <ADD/REMOVE>":
-            row_values.append("a")
+            row_values.append(action_token)
         elif col_name == "Done? <Y>":
             row_values.append("y")
         else:
@@ -133,18 +123,88 @@ def test_adding(spreadsheet):
                 row_values.append(item_data[col_name])
             except KeyError:
                 row_values.append("")
-    console.update(f"{ALPHABET[START_COL]}5:{ALPHABET[START_COL + len(CONSOLE_COL_NAMES) - 1]}5", [row_values])
+    row = random.randint(3, 1000)
+    console.update(f"{ALPHABET[START_COL]}{row}:{ALPHABET[START_COL + len(CONSOLE_COL_NAMES) - 1]}{row}", [row_values])
 
+
+example_purchase_0 = {
+    "Quantity": "2",
+    "Date of purchase [DD-MM-YYYY]": datetime.now().strftime("%d-%m-%Y"),
+    "Unit price [PLN]": "3189,99",
+    "Item name": "Glock 26, 9mm",
+    "Category": "Self-defense only",
+    "Life expectancy [months]": "300"
+}
+
+
+@pytest.mark.order(4)
+def test_adding(spreadsheet):
+    console = spreadsheet.worksheet("Console")
+    add_remove_item(console, example_purchase_0, "a")
     time.sleep(REFRESH_PERIOD + 10)
+
     inventory = spreadsheet.worksheet("Inventory")
-    total_value = int(item_data["Quantity"]) * float(item_data["Unit price [PLN]"].replace(",", "."))
+    total_value = int(example_purchase_0["Quantity"]) * float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
     assert total_value == float(inventory.cell(
         to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
     row_values = inventory.row_values(to_1_based(START_ROW) + 2)
     for i, col_name in enumerate(INVENTORY_COL_NAMES):
         if col_name in ["Category", "Item name", "Quantity", "Life expectancy [months]"]:
-            assert item_data[col_name] == row_values[i + START_ROW]
+            assert example_purchase_0[col_name] == row_values[i + START_ROW]
         elif col_name == "Average unit value [PLN]":
-            assert float(item_data["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
+            assert float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
         elif col_name == "Depreciation [PLN]":
             assert 0. == float(row_values[i + START_ROW])
+
+
+example_purchase_1 = {
+    "ID": None,
+    "Quantity": "1",
+    "Date of purchase [DD-MM-YYYY]": "28-12-1996",  # nice date
+    "Unit price [PLN]": "1570,10"
+}
+
+
+@pytest.mark.order(5)
+def test_appending(spreadsheet):
+    console = spreadsheet.worksheet("Console")
+    inventory = spreadsheet.worksheet("Inventory")
+    example_purchase_1["ID"] = inventory.cell(to_1_based(START_ROW) + 2, to_1_based(START_COL)).value
+    add_remove_item(console, example_purchase_1, "ADD")
+    time.sleep(REFRESH_PERIOD + 10)
+
+    assert "3" == inventory.cell(
+        to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
+
+
+@pytest.mark.order(6)
+def test_removing(spreadsheet):
+    console = spreadsheet.worksheet("Console")
+    inventory = spreadsheet.worksheet("Inventory")
+    item_data = {
+        "ID": example_purchase_1["ID"],
+        "Quantity": "2"
+    }
+    add_remove_item(console, item_data, "r")
+
+    time.sleep(REFRESH_PERIOD + 10)
+    assert "1" == inventory.cell(
+        to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
+
+
+@pytest.mark.order(7)
+def test_spending(spreadsheet):
+    spending = spreadsheet.worksheet("Spending")
+    lock.acquire()
+    now = datetime.now()
+
+    date = datetime.strptime(example_purchase_0["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y")
+    offset = (now.year - date.year) * 12 + now.month - date.month
+    total_price = int(example_purchase_0["Quantity"]) * float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
+    assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
+
+    date = datetime.strptime(example_purchase_1["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y")
+    offset = (now.year - date.year) * 12 + now.month - date.month
+    total_price = int(example_purchase_1["Quantity"]) * float(example_purchase_1["Unit price [PLN]"].replace(",", "."))
+    assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
+    lock.release()
