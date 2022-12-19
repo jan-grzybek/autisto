@@ -3,6 +3,41 @@ from bson.objectid import ObjectId
 from datetime import datetime
 
 
+class MergeSortDocs:
+    def __init__(self):
+        pass
+
+    def _split(self, documents):
+        documents_count = len(documents)
+        if documents_count > 1:
+            index = documents_count // 2
+            return documents[:index], documents_count[index:]
+        else:
+            return documents, None
+
+    def _merge(self, list_0, list_1):
+        output_list = []
+        index_0 = 0
+        index_1 = 0
+        while index_0 < len(list_0) and index_1 < len(list_1):
+            date_0 = datetime.strptime(list_0[index_0]["dates_of_purchase"][-1], "%d-%m-%Y")
+            date_1 = datetime.strptime(list_1[index_1]["dates_of_purchase"][-1], "%d-%m-%Y")
+            if date_0 < date_1:
+                output_list.append(list_1[index_1])
+                index_1 += 1
+            else:
+                output_list.append(list_0[index_0])
+                index_0 += 1
+        return output_list + list_0[index_0:] + list_1[index_1:]
+
+    def sort(self, documents):
+        split_docs = self._split(documents)
+        if split_docs[1] is not None:
+            return self._merge(self.sort(split_docs[0]), self.sort(split_docs[1]))
+        else:
+            return split_docs[0]
+
+
 class Database:
     def __init__(self, mongodb):
         self._client = MongoClient(mongodb)
@@ -11,8 +46,12 @@ class Database:
         self._decommissioned = self._db["decommissioned"]
         self.ss = None
 
-    def get_assets(self):
-        return self._assets.find({})
+    def get_assets(self, sort_by_latest=False):
+        if sort_by_latest:
+            assets = [document for document in self._assets.find({})]
+            return MergeSortDocs().sort(assets)
+        else:
+            return self._assets.find({})
 
     def get_decommissioned(self):
         return self._decommissioned.find({})

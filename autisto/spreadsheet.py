@@ -244,11 +244,14 @@ class InventorySheet:
     def summarize(self, database):
         finance_module = FinanceModule()
         self._sheet.clear()
-        self._sheet.format(f"G{self._start_row}", {"horizontalAlignment": "RIGHT"})
+        self._sheet.format(f"G{self._start_row}:I{self._start_row}", {"horizontalAlignment": "RIGHT"})
+        self._sheet.format(f"H{self._start_row}:I{self._start_row}",
+                           {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
+        self._sheet.format(f"G{self._start_row+2}:I", {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
-        for document in database.get_assets():
+        for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc(document)
             summary_table[0][-2] += total_value
             summary_table[0][-1] += depreciation
@@ -258,12 +261,12 @@ class InventorySheet:
                 document["item_name"],
                 document["quantity"],
                 document["life_expectancy_months"],
-                "{:.2f}".format(round(total_value / document["quantity"], 2)),
-                "{:.2f}".format(round(total_value, 2)),
-                "{:.2f}".format(round(depreciation, 2))
+                round(total_value / document["quantity"], 2),
+                round(total_value, 2),
+                round(depreciation, 2)
             ])
-        summary_table[0][-2] = "{:.2f}".format(round(summary_table[0][-2], 2))
-        summary_table[0][-1] = "{:.2f}".format(round(summary_table[0][-1], 2))
+        summary_table[0][-2] = round(summary_table[0][-2], 2)
+        summary_table[0][-1] = round(summary_table[0][-1], 2)
         self._sheet.update(f"B2:I{to_1_based(len(summary_table))}", summary_table)
 
 
@@ -282,24 +285,29 @@ class SpendingSheet:
             for month in range(1, 13):
                 month_to_month_spending[str(year)][str(month)] = 0.
 
-        most_distant_year_observed = current_time.year + 1
+        most_distant_date_observed = current_time
         for collection in [database.get_assets(), database.get_decommissioned()]:
             for document in collection:
                 for i, date in enumerate(document["dates_of_purchase"]):
                     purchase_date = datetime.strptime(date, "%d-%m-%Y")
-                    most_distant_year_observed = min(purchase_date.year, most_distant_year_observed)
+                    if purchase_date.year < most_distant_date_observed.year:
+                        most_distant_date_observed = purchase_date
                     month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
 
         self._sheet.clear()
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
+        self._sheet.format(f"D{self._start_row + 1}:D", {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
         self._sheet.format(f"B{self._start_row}:D{self._start_row}", {"textFormat": {"bold": True}})
         summary_table = [self._column_names]
-        for year in reversed(range(most_distant_year_observed, current_time.year + 1)):
+        for year in reversed(range(most_distant_date_observed.year, current_time.year + 1)):
             if year == current_time.year:
                 for month in reversed(range(1, current_time.month + 1)):
-                    summary_table.append([year, month, "{:.2f}".format(month_to_month_spending[str(year)][str(month)])])
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+            elif year == most_distant_date_observed.year:
+                for month in reversed(range(most_distant_date_observed.month, 13)):
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
             else:
                 for month in reversed(range(1, 13)):
-                    summary_table.append([year, month, "{:.2f}".format(month_to_month_spending[str(year)][str(month)])])
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
 
         self._sheet.update(f"B{self._start_row}:D{to_1_based(len(summary_table))}", summary_table)

@@ -6,7 +6,6 @@ import string
 import gspread
 from pathlib import Path
 from datetime import datetime
-from dateutil import relativedelta
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 
