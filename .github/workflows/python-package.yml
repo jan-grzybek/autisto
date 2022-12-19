@@ -43,8 +43,8 @@ jobs:
         sudo python -m pip install dist/*
     - name: Set up Autisto
       env:
-        CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
-        EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
+        CREDENTIALS: ${{ secrets.AUTISTO_TEST_CLIENT_CREDENTIALS }}
+        EMAIL: ${{ secrets.AUTISTO_TEST_CLIENT_EMAIL }}
         REFRESH_PERIOD: 60
       run: |
         echo "$CREDENTIALS" > credentials.json
@@ -57,7 +57,7 @@ jobs:
         sleep 5
     - name: Test with pytest
       env:
-        CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+        CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CLIENT_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
         sudo pytest tests/
