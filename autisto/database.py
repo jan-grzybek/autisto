@@ -31,11 +31,11 @@ class MergeSortDocs:
         return output_list + list_0[index_0:] + list_1[index_1:]
 
     def sort(self, documents):
-        split_docs = self._split(documents)
-        if split_docs[1] is not None:
-            return self._merge(self.sort(split_docs[0]), self.sort(split_docs[1]))
+        part_0, part_1 = self._split(documents)
+        if part_1 is not None:
+            return self._merge(self.sort(part_0), self.sort(part_1))
         else:
-            return split_docs[0]
+            return part_0
 
 
 class Database:
