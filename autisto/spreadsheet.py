@@ -251,7 +251,7 @@ class InventorySheet:
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
-        for document in database.get_assets():
+        for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc(document)
             summary_table[0][-2] += total_value
             summary_table[0][-1] += depreciation
