@@ -11,7 +11,7 @@ class MergeSortDocs:
         documents_count = len(documents)
         if documents_count > 1:
             index = documents_count // 2
-            return documents[:index], documents_count[index:]
+            return documents[:index], documents[index:]
         else:
             return documents, None
 
