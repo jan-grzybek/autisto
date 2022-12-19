@@ -246,8 +246,8 @@ class InventorySheet:
         self._sheet.clear()
         self._sheet.format(f"G{self._start_row}:I{self._start_row}", {"horizontalAlignment": "RIGHT"})
         self._sheet.format(f"H{self._start_row}:I{self._start_row}",
-                           {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
-        self._sheet.format(f"G{self._start_row+2}:I", {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
+                           {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
+        self._sheet.format(f"G{self._start_row+2}:I", {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
@@ -296,7 +296,7 @@ class SpendingSheet:
 
         self._sheet.clear()
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
-        self._sheet.format(f"D{self._start_row + 1}:D", {"numberFormat": {"type": "NUMBER", "pattern": "0.0#"}})
+        self._sheet.format(f"D{self._start_row + 1}:D", {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
         self._sheet.format(f"B{self._start_row}:D{self._start_row}", {"textFormat": {"bold": True}})
         summary_table = [self._column_names]
         for year in reversed(range(most_distant_date_observed.year, current_time.year + 1)):

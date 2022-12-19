@@ -1,7 +1,7 @@
 import os
 import setuptools
 
-VERSION = "1.0rc6"
+VERSION = "1.0rc7"
 
 
 def load_readme():
