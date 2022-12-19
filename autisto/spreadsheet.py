@@ -290,7 +290,7 @@ class SpendingSheet:
             for document in collection:
                 for i, date in enumerate(document["dates_of_purchase"]):
                     purchase_date = datetime.strptime(date, "%d-%m-%Y")
-                    if purchase_date.year < most_distant_date_observed.year:
+                    if purchase_date < most_distant_date_observed:
                         most_distant_date_observed = purchase_date
                     month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
 
