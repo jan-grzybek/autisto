@@ -10,7 +10,7 @@ from dateutil import relativedelta
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 
-REFRESH_PERIOD = 60
+REFRESH_PERIOD = 120
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
 
