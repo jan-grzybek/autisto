@@ -48,7 +48,8 @@ class Database:
 
     def get_assets(self, sort_by_latest=False):
         if sort_by_latest:
-            return MergeSortDocs().sort(self._assets.find({}))
+            assets = [document for document in self._assets.find({})]
+            return MergeSortDocs().sort(assets)
         else:
             return self._assets.find({})
 

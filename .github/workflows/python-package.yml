@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-22.04
     strategy:
-      fail-fast: true
+      max-parallel: 1
       matrix:
         python-version: ["3.10", "3.11"]
     steps:
@@ -48,7 +48,7 @@ jobs:
         REFRESH_PERIOD: 60
       run: |
         echo "$CREDENTIALS" > credentials.json
-        sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
+        # sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
         sudo autisto <<EOF
         credentials.json
         $EMAIL
