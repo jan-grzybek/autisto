@@ -67,7 +67,9 @@ class Linux(Platform):
             file.write("User=root\n")
             file.write("Type=simple\n")
             file.write(f"ExecStart={sys.executable} "
-                       f"{os.path.join(autisto_dir, 'server.py')} > /tmp/autisto.log 2>&1\n")
+                       f"{os.path.join(autisto_dir, 'server.py')}\n")
+            file.write("StandardOutput=file:/tmp/autisto.log\n")
+            file.write("StandardError=file:/tmp/autisto.log\n")
             file.write("RestartSec=5\n")
             file.write("Restart=always\n")
             file.write("\n[Install]\n")
