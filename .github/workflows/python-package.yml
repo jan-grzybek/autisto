@@ -58,6 +58,7 @@ jobs:
     - name: Test with pytest
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+        REFRESH_PERIOD: 60
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
         sudo pytest tests/
