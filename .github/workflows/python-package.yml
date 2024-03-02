@@ -56,7 +56,10 @@ jobs:
         $EMAIL
         $REFRESH_PERIOD
         EOF
+        sleep 10
+        sudo systemctl status autisto
         sleep 5
+        sudo systemctl status autisto
     - name: Test
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
