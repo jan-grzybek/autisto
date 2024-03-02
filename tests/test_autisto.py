@@ -4,6 +4,7 @@ import time
 import random
 import string
 import gspread
+import signal
 from pathlib import Path
 from datetime import datetime
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
@@ -33,6 +34,10 @@ class Lock:
 
 
 lock = Lock()
+
+
+def handler(_, __):
+    raise TimeoutError
 
 
 def get_spreadsheet():
@@ -248,7 +253,22 @@ def run_test(test, spreadsheet):
 
 
 if __name__ == "__main__":
-    ss = get_spreadsheet()
+    ss = None
+    try:
+        timeout = 30
+        for _ in range(3):
+            signal.signal(signal.SIGALRM, handler)
+            signal.alarm(timeout)
+            try:
+                ss = get_spreadsheet()
+                break
+            except TimeoutError:
+                continue
+        else:
+            assert False, "Couldn't load spreadsheet"
+        time.sleep(timeout)
+    except TimeoutError:
+        assert ss is not None
     run_test(test_sheets_creation, ss)
     run_test(test_sheets_maintaining, ss)
     run_test(test_column_titling, ss)
