@@ -65,7 +65,7 @@ def test_column_titling(spreadsheet):
         start_row = to_1_based(START_ROW) + 1 if sheet == "Inventory" else to_1_based(START_ROW)
         row_values = spreadsheet.worksheet(sheet).row_values(start_row)[START_COL:]
         for i, col_name in enumerate(titles):
-            assert row_values[i] == col_name
+            assert row_values[i] == col_name, f"{row_values[i]} != {col_name}"
     lock.release()
     print("SUCCESS.")
 
