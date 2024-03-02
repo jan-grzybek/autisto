@@ -7,6 +7,7 @@ import gspread
 import signal
 from pathlib import Path
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 from autisto.finances import FinanceModule
@@ -15,6 +16,8 @@ PATIENCE = 30
 REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
+
+finances = FinanceModule()
 
 
 class Lock:
@@ -176,8 +179,6 @@ def test_adding(spreadsheet):
             assert 0. == float(row_values[i + START_ROW].replace(",", ""))
         elif col_name == "Depreciation [%]":
             assert 0. == float(row_values[i + START_ROW].replace("%", ""))
-        else:
-            assert False
     print("SUCCESS.")
 
 
@@ -197,10 +198,23 @@ def test_appending(spreadsheet):
     add_remove_item(console, example_purchase_1, "ADD")
     time.sleep(REFRESH_PERIOD + PATIENCE)
 
-    assert "3" == inventory.cell(
-        to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
-    assert 0. < float(inventory.cell(to_1_based(START_ROW) + 2, to_1_based(START_COL) +
-                                     INVENTORY_COL_NAMES.index("Depreciation [PLN]")).value.replace(",", ""))
+    old_one = finances.calc_adjusted_price(
+        float(example_purchase_1["Unit price [PLN]"].replace(",", ".")),
+        datetime.strptime(example_purchase_1["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y"))
+    row_values = inventory.row_values(to_1_based(START_ROW) + 2)
+    for i, col_name in enumerate(INVENTORY_COL_NAMES):
+        if col_name == "Quantity":
+            assert "3" == row_values[i + START_ROW]
+        elif col_name == "Latest purchase":
+            assert example_purchase_0["Date of purchase [DD-MM-YYYY]"] == row_values[i + START_ROW]
+        elif col_name == "Average unit value [PLN]":
+            average_unit_value = round(
+                (2 * float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) + old_one) / 3, 2)
+            assert average_unit_value == float(row_values[i + START_ROW].replace(",", ""))
+        elif col_name == "Depreciation [PLN]":
+            assert round(old_one, 2) == float(row_values[i + START_ROW].replace(",", ""))
+        elif col_name == "Depreciation [%]":
+            assert 33. == float(row_values[i + START_ROW].replace("%", ""))
     print("SUCCESS.")
 
 
@@ -240,8 +254,14 @@ def test_spending(spreadsheet):
     offset = (now.year - date.year) * 12 + now.month - date.month
     total_price = (int(example_purchase_1["Quantity"]) *
                    float(example_purchase_1["Unit price [PLN]"].replace(",", ".")))
-    assert round(FinanceModule().calc_adjusted_price(total_price, date), 2) == float(
+    adjusted_price = round(finances.calc_adjusted_price(total_price, date), 2)
+    assert adjusted_price == float(
         spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value.replace(",", ""))
+
+    date = datetime(date.year, date.month, 1) + relativedelta(months=11)
+    offset = (now.year - date.year) * 12 + now.month - date.month
+    assert adjusted_price == float(
+        spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 3).value.replace(",", ""))
     lock.release()
     print("SUCCESS.")
 
