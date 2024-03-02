@@ -269,8 +269,8 @@ class InventorySheet:
                 round(depreciation, 2),
                 depreciation / total_value
             ])
-        summary_table[0][-2] = round(summary_table[0][-2], 2)
-        summary_table[0][-1] = round(summary_table[0][-1], 2)
+        summary_table[0][-2] = round(summary_table[0][-3], 2)
+        summary_table[0][-1] = round(summary_table[0][-2], 2)
         self._sheet.update(f"B2:K{to_1_based(len(summary_table))}", summary_table)
 
 
