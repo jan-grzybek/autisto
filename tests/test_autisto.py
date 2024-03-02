@@ -1,4 +1,3 @@
-import os
 import json
 import time
 import pytest
@@ -11,8 +10,7 @@ from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CO
     SPENDING_COL_NAMES
 
 PATIENCE = 30
-REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
-assert REFRESH_PERIOD >= 60
+REFRESH_PERIOD = 60
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
 
