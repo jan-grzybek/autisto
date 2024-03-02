@@ -175,6 +175,8 @@ def test_adding(spreadsheet):
         elif col_name == "Average unit value [PLN]":
             assert (float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
                     == float(row_values[i + START_ROW].replace(",", "")))
+        elif col_name == "Total value [PLN]":
+            assert total_value == float(row_values[i + START_ROW].replace(",", ""))
         elif col_name == "Depreciation [PLN]":
             assert 0. == float(row_values[i + START_ROW].replace(",", ""))
         elif col_name == "Depreciation [%]":
@@ -201,6 +203,8 @@ def test_appending(spreadsheet):
     old_one = finances.calc_adjusted_price(
         float(example_purchase_1["Unit price [PLN]"].replace(",", ".")),
         datetime.strptime(example_purchase_1["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y"))
+    total_value = (int(example_purchase_0["Quantity"]) *
+                   float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) + old_one)
     row_values = inventory.row_values(to_1_based(START_ROW) + 2)
     for i, col_name in enumerate(INVENTORY_COL_NAMES):
         if col_name == "Quantity":
@@ -211,10 +215,12 @@ def test_appending(spreadsheet):
             average_unit_value = round(
                 (2 * float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) + old_one) / 3, 2)
             assert average_unit_value == float(row_values[i + START_ROW].replace(",", ""))
+        elif col_name == "Total value [PLN]":
+            assert round(total_value, 2) == float(row_values[i + START_ROW].replace(",", ""))
         elif col_name == "Depreciation [PLN]":
             assert round(old_one, 2) == float(row_values[i + START_ROW].replace(",", ""))
         elif col_name == "Depreciation [%]":
-            assert 33. == float(row_values[i + START_ROW].replace("%", ""))
+            assert round((old_one / total_value) * 100, 0) == float(row_values[i + START_ROW].replace("%", ""))
     print("SUCCESS.")
 
 

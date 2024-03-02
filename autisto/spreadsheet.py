@@ -248,7 +248,7 @@ class InventorySheet:
         self._sheet.format(f"I{self._start_row}:J{self._start_row}",
                            {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
         self._sheet.format(f"H{self._start_row+2}:J", {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
-        self._sheet.format(f"K{self._start_row+2}:K", {"numberFormat": {"type": "NUMBER", "pattern": "#%"}})
+        self._sheet.format(f"K{self._start_row+2}:K", {"numberFormat": {"type": "NUMBER", "pattern": "0%"}})
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = \
