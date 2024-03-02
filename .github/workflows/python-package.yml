@@ -60,5 +60,5 @@ jobs:
         REFRESH_PERIOD: 60
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
-        sudo pytest -s tests/
+        sudo pytest tests/ -s
         sleep 900
