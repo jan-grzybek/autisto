@@ -1,3 +1,4 @@
+import os
 import json
 import time
 import pytest
@@ -9,7 +10,9 @@ from datetime import datetime
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 
-REFRESH_PERIOD = 60
+PATIENCE = 30
+REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
+assert REFRESH_PERIOD >= 60
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
 
@@ -80,7 +83,7 @@ def test_sheets_maintaining(spreadsheet):
                 cells_to_litter[sheet][i].col,
                 litter[i]
             )
-    time.sleep(REFRESH_PERIOD + 10)
+    time.sleep(REFRESH_PERIOD + PATIENCE)
 
     for sheet in SHEET_NAMES:
         worksheet = spreadsheet.worksheet(sheet)
@@ -140,7 +143,7 @@ example_purchase_0 = {
 def test_adding(spreadsheet):
     console = spreadsheet.worksheet("Console")
     add_remove_item(console, example_purchase_0, "a")
-    time.sleep(REFRESH_PERIOD + 10)
+    time.sleep(REFRESH_PERIOD + PATIENCE)
 
     inventory = spreadsheet.worksheet("Inventory")
     total_value = int(example_purchase_0["Quantity"]) * float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
@@ -172,7 +175,7 @@ def test_appending(spreadsheet):
     inventory = spreadsheet.worksheet("Inventory")
     example_purchase_1["ID"] = inventory.cell(to_1_based(START_ROW) + 2, to_1_based(START_COL)).value
     add_remove_item(console, example_purchase_1, "ADD")
-    time.sleep(REFRESH_PERIOD + 10)
+    time.sleep(REFRESH_PERIOD + PATIENCE)
 
     assert "3" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
@@ -190,7 +193,7 @@ def test_removing(spreadsheet):
     }
     add_remove_item(console, item_data, "r")
 
-    time.sleep(REFRESH_PERIOD + 10)
+    time.sleep(REFRESH_PERIOD + PATIENCE)
     assert "1" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
     total_value = float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
