@@ -57,10 +57,7 @@ jobs:
         $EMAIL
         $REFRESH_PERIOD
         EOF
-        sleep 10
-        sudo cat /tmp/autisto.log 
-        sudo systemctl status autisto
-        sleep 5
+        sleep 15
         sudo cat /tmp/autisto.log 
         sudo systemctl status autisto
     - name: Test
