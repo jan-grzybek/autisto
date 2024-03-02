@@ -160,8 +160,8 @@ def test_adding(spreadsheet):
     inventory = spreadsheet.worksheet("Inventory")
     total_value = (int(example_purchase_0["Quantity"]) *
                    float(example_purchase_0["Unit price [PLN]"].replace(",", ".")))
-    assert total_value == float(inventory.cell(
-        to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
+    assert total_value == float(inventory.cell(to_1_based(START_ROW), to_1_based(START_COL) +
+                                               INVENTORY_COL_NAMES.index("Total value [PLN]")).value.replace(",", ""))
     row_values = inventory.row_values(to_1_based(START_ROW) + 2)
     for i, col_name in enumerate(INVENTORY_COL_NAMES):
         if col_name in ["Category", "Item name", "Quantity", "Life expectancy [months]"]:
@@ -170,9 +170,9 @@ def test_adding(spreadsheet):
             assert example_purchase_0["Date of purchase [DD-MM-YYYY]"] == row_values[i + START_ROW]
         elif col_name == "Average unit value [PLN]":
             assert (float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
-                    == float(row_values[i + START_ROW]))
+                    == float(row_values[i + START_ROW].replace(",", "")))
         elif col_name in ["Depreciation [PLN]", "Depreciation [%]"]:
-            assert 0. == float(row_values[i + START_ROW])
+            assert 0. == float(row_values[i + START_ROW].replace(",", ""))
     print("SUCCESS.")
 
 
@@ -194,8 +194,8 @@ def test_appending(spreadsheet):
 
     assert "3" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
-    assert 0. < float(inventory.cell(
-        to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Depreciation [PLN]")).value)
+    assert 0. < float(inventory.cell(to_1_based(START_ROW) + 2, to_1_based(START_COL) +
+                                     INVENTORY_COL_NAMES.index("Depreciation [PLN]")).value.replace(",", ""))
     print("SUCCESS.")
 
 
@@ -213,8 +213,8 @@ def test_removing(spreadsheet):
     assert "1" == inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
     total_value = float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
-    assert total_value == float(inventory.cell(
-        to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
+    assert total_value == float(inventory.cell(to_1_based(START_ROW), to_1_based(START_COL) +
+                                               INVENTORY_COL_NAMES.index("Total value [PLN]")).value.replace(",", ""))
     print("SUCCESS.")
 
 
@@ -228,13 +228,15 @@ def test_spending(spreadsheet):
     offset = (now.year - date.year) * 12 + now.month - date.month
     total_price = (int(example_purchase_0["Quantity"]) *
                    float(example_purchase_0["Unit price [PLN]"].replace(",", ".")))
-    assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
+    assert total_price == float(
+        spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value.replace(",", ""))
 
     date = datetime.strptime(example_purchase_1["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y")
     offset = (now.year - date.year) * 12 + now.month - date.month
     total_price = (int(example_purchase_1["Quantity"]) *
                    float(example_purchase_1["Unit price [PLN]"].replace(",", ".")))
-    assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
+    assert total_price == float(
+        spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value.replace(",", ""))
     lock.release()
     print("SUCCESS.")
 
