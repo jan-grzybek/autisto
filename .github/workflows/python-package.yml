@@ -33,7 +33,7 @@ jobs:
     - name: Install test dependencies
       run: |
         sudo python -m pip install --upgrade pip
-        sudo python -m pip install flake8 pytest wheel pytest-order
+        sudo python -m pip install flake8 wheel
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -57,10 +57,10 @@ jobs:
         $REFRESH_PERIOD
         EOF
         sleep 5
-    - name: Test with pytest
+    - name: Test
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
-        sudo python3 tests/clean_up.py
+        sudo python3 tests/clean_up.py client_credentials.json
         sudo python3 tests/test_autisto.py
