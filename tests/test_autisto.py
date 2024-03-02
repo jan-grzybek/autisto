@@ -274,7 +274,11 @@ def test_spending(spreadsheet):
 
 def print_autisto_log():
     with open("/tmp/autisto.log", "r") as f:
-        print(f.read())
+        x = f.read()
+        if len(x) > 0:
+            print("\nOutput of Autisto server:")
+            print(x)
+            print("\nPython traceback:")
 
 
 def run_test(test, spreadsheet):
