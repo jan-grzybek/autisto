@@ -138,7 +138,7 @@ def add_remove_item(console, item_data, action_token):
             except KeyError:
                 row_values.append("")
     row = random.randint(3, 1000)
-    console.update(f"{ALPHABET[START_COL]}{row}:{ALPHABET[START_COL + len(CONSOLE_COL_NAMES) - 1]}{row}", [row_values])
+    console.update([row_values], f"{ALPHABET[START_COL]}{row}:{ALPHABET[START_COL + len(CONSOLE_COL_NAMES) - 1]}{row}")
 
 
 example_purchase_0 = {

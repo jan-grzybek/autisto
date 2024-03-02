@@ -53,7 +53,7 @@ class Console:
             self._sheet.batch_clear(["A1:A", "A1:Z2", "K1:Z"])
             self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
             self._sheet.format(f"B{self._start_row}:Z{self._start_row}", {"textFormat": {"bold": True}})
-            self._sheet.update(f"B{self._start_row}:L{self._start_row}", [self._column_names])
+            self._sheet.update([self._column_names], f"B{self._start_row}:L{self._start_row}")
         for order in self._orders:
             self._sheet.batch_clear([f"B{order.row}:Z{order.row}"])
         self._orders = []
@@ -271,7 +271,7 @@ class InventorySheet:
             ])
         summary_table[0][-2] = round(summary_table[0][-3], 2)
         summary_table[0][-1] = round(summary_table[0][-2], 2)
-        self._sheet.update(f"B2:K{to_1_based(len(summary_table))}", summary_table)
+        self._sheet.update(summary_table, f"B2:K{to_1_based(len(summary_table))}")
 
 
 class SpendingSheet:
@@ -335,4 +335,4 @@ class SpendingSheet:
                         spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
                     summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
 
-        self._sheet.update(f"B{self._start_row}:E{to_1_based(len(summary_table))}", summary_table)
+        self._sheet.update(summary_table, f"B{self._start_row}:E{to_1_based(len(summary_table))}")
