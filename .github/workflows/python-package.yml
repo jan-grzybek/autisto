@@ -68,4 +68,5 @@ jobs:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
+        echo "Starting test suite"
         sudo REFRESH_PERIOD=$REFRESH_PERIOD python3 tests/test_autisto.py
