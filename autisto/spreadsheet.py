@@ -10,7 +10,7 @@ START_ROW = 1
 START_COL = 1
 
 CONSOLE_COL_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
-                     "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
+                     "Item name", "Category", "Life expectancy [months]", "Done? <Y>", None, "Status"]
 INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Latest purchase", "Quantity", "Life expectancy [months]",
                        "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]", "Depreciation [%]"]
 SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN, inflation-adjusted]",
@@ -251,7 +251,8 @@ class InventorySheet:
         self._sheet.format(f"K{self._start_row+2}:K", {"numberFormat": {"type": "NUMBER", "pattern": "#%"}})
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
-        summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
+        summary_table = \
+            [[None for _ in range(len(self._column_names) - 4)] + ["SUM=", 0., 0., None], self._column_names]
         for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc_adjusted_value_and_depreciation(document)
             summary_table[0][-2] += total_value
