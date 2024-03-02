@@ -108,6 +108,7 @@ def test_sheets_maintaining(spreadsheet):
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
             elif sheet == "Spending":
                 if cell_coordinates.row == 1 or to_1_based(START_ROW) + 1 <= cell_coordinates.row:
+                    print(worksheet.cell(cell_coordinates.row, cell_coordinates.col).value)
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
                 elif cell_coordinates.col == 1 or \
                         to_1_based(START_COL) + len(SPENDING_COL_NAMES) <= cell_coordinates.col:
