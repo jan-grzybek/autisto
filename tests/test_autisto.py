@@ -253,6 +253,7 @@ def run_test(test, spreadsheet):
 
 
 if __name__ == "__main__":
+    print("Starting tests ...")
     ss = None
     try:
         timeout = 30
