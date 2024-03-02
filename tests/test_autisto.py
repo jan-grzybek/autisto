@@ -172,8 +172,12 @@ def test_adding(spreadsheet):
         elif col_name == "Average unit value [PLN]":
             assert (float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
                     == float(row_values[i + START_ROW].replace(",", "")))
-        elif col_name in ["Depreciation [PLN]", "Depreciation [%]"]:
+        elif col_name == "Depreciation [PLN]":
             assert 0. == float(row_values[i + START_ROW].replace(",", ""))
+        elif col_name == "Depreciation [%]":
+            assert 0. == float(row_values[i + START_ROW].replace("%", ""))
+        else:
+            assert False
     print("SUCCESS.")
 
 
