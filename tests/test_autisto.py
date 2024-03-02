@@ -1,3 +1,4 @@
+print("YO")
 import json
 import os
 import time
@@ -10,6 +11,7 @@ from datetime import datetime
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
 
+print("HI")
 PATIENCE = 30
 REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
 ALPHABET = list(string.ascii_uppercase)
