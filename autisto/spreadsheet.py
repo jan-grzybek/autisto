@@ -321,18 +321,21 @@ class SpendingSheet:
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
+                    summary_table.append(
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
             elif year == most_distant_date_observed.year:
                 for month in reversed(range(most_distant_date_observed.month, 13)):
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
+                    summary_table.append(
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
             else:
                 for month in reversed(range(1, 13)):
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
+                    summary_table.append(
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
 
         self._sheet.update(summary_table, f"B{self._start_row}:E{to_1_based(len(summary_table))}")

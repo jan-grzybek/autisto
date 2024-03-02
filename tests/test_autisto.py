@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CONSOLE_COL_NAMES, INVENTORY_COL_NAMES, \
     SPENDING_COL_NAMES
+from autisto.finances import FinanceModule
 
 PATIENCE = 30
 REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
@@ -235,7 +236,7 @@ def test_spending(spreadsheet):
     offset = (now.year - date.year) * 12 + now.month - date.month
     total_price = (int(example_purchase_1["Quantity"]) *
                    float(example_purchase_1["Unit price [PLN]"].replace(",", ".")))
-    assert total_price == float(
+    assert round(FinanceModule().calc_adjusted_price(total_price, date), 2) == float(
         spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value.replace(",", ""))
     lock.release()
     print("SUCCESS.")
@@ -249,7 +250,7 @@ def print_autisto_log():
 def run_test(test, spreadsheet):
     try:
         test(spreadsheet)
-    except AssertionError as e:
+    except Exception as e:
         print_autisto_log()
         raise e
 
