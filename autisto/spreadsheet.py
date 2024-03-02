@@ -320,22 +320,22 @@ class SpendingSheet:
                 for month in reversed(range(1, current_time.month + 1)):
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
-                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                        spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
             elif year == most_distant_date_observed.year:
                 for month in reversed(range(most_distant_date_observed.month, 13)):
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
-                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                        spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
             else:
                 for month in reversed(range(1, 13)):
                     spending_ttm = None
                     if enter_ttm_date <= datetime(year, month, 1):
-                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                        spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), round(spending_ttm, 2)])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
 
         self._sheet.update(summary_table, f"B{self._start_row}:E{to_1_based(len(summary_table))}")
