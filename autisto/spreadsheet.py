@@ -10,7 +10,7 @@ START_ROW = 1
 START_COL = 1
 
 CONSOLE_COL_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
-                     "Item name", "Category", "Life expectancy [months]", "Done? <Y>", None, "Status"]
+                     "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
 INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Latest purchase", "Quantity", "Life expectancy [months]",
                        "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]", "Depreciation [%]"]
 SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN, inflation-adjusted]",
