@@ -255,8 +255,8 @@ class InventorySheet:
             [[None for _ in range(len(self._column_names) - 4)] + ["SUM=", 0., 0., None], self._column_names]
         for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc_adjusted_value_and_depreciation(document)
-            summary_table[0][-2] += total_value
-            summary_table[0][-1] += depreciation
+            summary_table[0][-3] += total_value
+            summary_table[0][-2] += depreciation
             summary_table.append([
                 str(document["_id"]),
                 document["category"],
