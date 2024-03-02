@@ -36,6 +36,7 @@ lock = Lock()
 
 
 def get_spreadsheet():
+    print("\nOpening spreadsheet ...")
     config = get_config()
     with open("client_credentials.json", "r") as client_credentials:
         gc = gspread.service_account_from_dict(json.load(client_credentials))
@@ -233,12 +234,25 @@ def test_spending(spreadsheet):
     print("SUCCESS.")
 
 
+def print_autisto_log():
+    with open("/tmp/autisto.log", "r") as f:
+        print(f.read())
+
+
+def run_test(test, spreadsheet):
+    try:
+        test(spreadsheet)
+    except AssertionError as e:
+        print_autisto_log()
+        raise e
+
+
 if __name__ == "__main__":
     ss = get_spreadsheet()
-    test_sheets_creation(ss)
-    test_sheets_maintaining(ss)
-    test_column_titling(ss)
-    test_adding(ss)
-    test_appending(ss)
-    test_removing(ss)
-    test_spending(ss)
+    run_test(test_sheets_creation, ss)
+    run_test(test_sheets_maintaining, ss)
+    run_test(test_column_titling, ss)
+    run_test(test_adding, ss)
+    run_test(test_appending, ss)
+    run_test(test_removing, ss)
+    run_test(test_spending, ss)
