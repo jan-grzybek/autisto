@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import random
 import string
@@ -9,7 +10,7 @@ from autisto.spreadsheet import get_config, to_1_based, START_ROW, START_COL, CO
     SPENDING_COL_NAMES
 
 PATIENCE = 30
-REFRESH_PERIOD = 60
+REFRESH_PERIOD = int(os.environ.get("REFRESH_PERIOD"))
 ALPHABET = list(string.ascii_uppercase)
 SHEET_NAMES = ["Console", "Inventory", "Spending"]
 
@@ -151,7 +152,8 @@ def test_adding(spreadsheet):
     time.sleep(REFRESH_PERIOD + PATIENCE)
 
     inventory = spreadsheet.worksheet("Inventory")
-    total_value = int(example_purchase_0["Quantity"]) * float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
+    total_value = (int(example_purchase_0["Quantity"]) *
+                   float(example_purchase_0["Unit price [PLN]"].replace(",", ".")))
     assert total_value == float(inventory.cell(
         to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
     row_values = inventory.row_values(to_1_based(START_ROW) + 2)
@@ -161,7 +163,8 @@ def test_adding(spreadsheet):
         elif col_name == "Latest purchase":
             assert example_purchase_0["Date of purchase [DD-MM-YYYY]"] == row_values[i + START_ROW]
         elif col_name == "Average unit value [PLN]":
-            assert float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
+            assert (float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
+                    == float(row_values[i + START_ROW]))
         elif col_name in ["Depreciation [PLN]", "Depreciation [%]"]:
             assert 0. == float(row_values[i + START_ROW])
     print("SUCCESS.")
@@ -217,12 +220,14 @@ def test_spending(spreadsheet):
 
     date = datetime.strptime(example_purchase_0["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y")
     offset = (now.year - date.year) * 12 + now.month - date.month
-    total_price = int(example_purchase_0["Quantity"]) * float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
+    total_price = (int(example_purchase_0["Quantity"]) *
+                   float(example_purchase_0["Unit price [PLN]"].replace(",", ".")))
     assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
 
     date = datetime.strptime(example_purchase_1["Date of purchase [DD-MM-YYYY]"], "%d-%m-%Y")
     offset = (now.year - date.year) * 12 + now.month - date.month
-    total_price = int(example_purchase_1["Quantity"]) * float(example_purchase_1["Unit price [PLN]"].replace(",", "."))
+    total_price = (int(example_purchase_1["Quantity"]) *
+                   float(example_purchase_1["Unit price [PLN]"].replace(",", ".")))
     assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
     lock.release()
     print("SUCCESS.")
