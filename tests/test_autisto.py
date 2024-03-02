@@ -253,11 +253,11 @@ def run_test(test, spreadsheet):
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGALRM, handler)
     ss = None
     try:
         timeout = 30
         for _ in range(3):
-            signal.signal(signal.SIGALRM, handler)
             signal.alarm(timeout)
             try:
                 ss = get_spreadsheet()
