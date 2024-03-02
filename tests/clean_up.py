@@ -1,11 +1,11 @@
-import sys
 import json
 import time
 import gspread
 
 
 def attempt_clean_up():
-    gc = gspread.service_account_from_dict(json.loads(sys.argv[1]))
+    with open("client_credentials.json", "r") as client_credentials:
+        gc = gspread.service_account_from_dict(json.load(client_credentials))
     file_names = None
     attempts = 0
     while file_names is None:

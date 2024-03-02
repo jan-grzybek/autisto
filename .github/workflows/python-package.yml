@@ -62,5 +62,5 @@ jobs:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
-        sudo python3 tests/clean_up.py client_credentials.json
+        sudo python3 tests/clean_up.py
         sudo python3 tests/test_autisto.py
