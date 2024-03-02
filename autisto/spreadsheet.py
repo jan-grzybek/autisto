@@ -2,7 +2,7 @@ import gspread
 from bson.errors import InvalidId
 from autisto.utils import *
 from datetime import datetime
-from autisto.finances import FinanceModule
+from dateutil.relativedelta import relativedelta
 
 BEGINNING_OF_TIME = datetime(1900, 1, 1)
 
@@ -11,9 +11,10 @@ START_COL = 1
 
 CONSOLE_COL_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase [DD-MM-YYYY]", "Unit price [PLN]",
                      "Item name", "Category", "Life expectancy [months]", "Done? <Y>", "", "Status"]
-INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Quantity", "Life expectancy [months]",
-                       "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]"]
-SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN]"]
+INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Latest purchase", "Quantity", "Life expectancy [months]",
+                       "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]", "Depreciation [%]"]
+SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN, inflation-adjusted]",
+                      "Amount spent TTM per month [PLN, inflation-adjusted]"]
 
 
 class SpreadSheet:
@@ -241,33 +242,35 @@ class InventorySheet:
         self._start_col = START_COL
         self._column_names = INVENTORY_COL_NAMES
 
-    def summarize(self, database):
-        finance_module = FinanceModule()
+    def summarize(self, database, finance_module):
         self._sheet.clear()
-        self._sheet.format(f"G{self._start_row}:I{self._start_row}", {"horizontalAlignment": "RIGHT"})
-        self._sheet.format(f"H{self._start_row}:I{self._start_row}",
-                           {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
-        self._sheet.format(f"G{self._start_row+2}:I", {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
+        self._sheet.format(f"H{self._start_row}:J{self._start_row}", {"horizontalAlignment": "RIGHT"})
+        self._sheet.format(f"I{self._start_row}:J{self._start_row}",
+                           {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
+        self._sheet.format(f"H{self._start_row+2}:J", {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
+        self._sheet.format(f"K{self._start_row+2}:K", {"numberFormat": {"type": "NUMBER", "pattern": "#%"}})
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [["" for _ in range(len(self._column_names) - 3)] + ["SUM=", 0., 0.], self._column_names]
         for document in database.get_assets(sort_by_latest=True):
-            total_value, depreciation = finance_module.calc(document)
+            total_value, depreciation = finance_module.calc_adjusted_value_and_depreciation(document)
             summary_table[0][-2] += total_value
             summary_table[0][-1] += depreciation
             summary_table.append([
                 str(document["_id"]),
                 document["category"],
                 document["item_name"],
+                document["dates_of_purchase"][-1],
                 document["quantity"],
                 document["life_expectancy_months"],
                 round(total_value / document["quantity"], 2),
                 round(total_value, 2),
-                round(depreciation, 2)
+                round(depreciation, 2),
+                depreciation / total_value
             ])
         summary_table[0][-2] = round(summary_table[0][-2], 2)
         summary_table[0][-1] = round(summary_table[0][-1], 2)
-        self._sheet.update(f"B2:I{to_1_based(len(summary_table))}", summary_table)
+        self._sheet.update(f"B2:K{to_1_based(len(summary_table))}", summary_table)
 
 
 class SpendingSheet:
@@ -277,13 +280,16 @@ class SpendingSheet:
         self._start_col = START_COL
         self._column_names = SPENDING_COL_NAMES
 
-    def summarize(self, database):
+    def summarize(self, database, finance_module):
         current_time = datetime.now()
         month_to_month_spending = {}
+        month_to_month_spending_ttm = {}
         for year in range(BEGINNING_OF_TIME.year, current_time.year + 1):
             month_to_month_spending[str(year)] = {}
+            month_to_month_spending_ttm[str(year)] = {}
             for month in range(1, 13):
                 month_to_month_spending[str(year)][str(month)] = 0.
+                month_to_month_spending_ttm[str(year)][str(month)] = 0.
 
         most_distant_date_observed = current_time
         for collection in [database.get_assets(), database.get_decommissioned()]:
@@ -292,22 +298,40 @@ class SpendingSheet:
                     purchase_date = datetime.strptime(date, "%d-%m-%Y")
                     if purchase_date < most_distant_date_observed:
                         most_distant_date_observed = purchase_date
-                    month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += document["prices"][i]
+                    adjusted_price = finance_module.calc_adjusted_price(document["prices"][i], purchase_date)
+                    month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += adjusted_price
+                    for j in range(12):
+                        target_date = purchase_date + relativedelta(months=j)
+                        try:
+                            month_to_month_spending_ttm[str(target_date.year)][str(target_date.month)] += adjusted_price
+                        except KeyError:
+                            break
 
         self._sheet.clear()
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
-        self._sheet.format(f"D{self._start_row + 1}:D", {"numberFormat": {"type": "NUMBER", "pattern": "0.00#"}})
-        self._sheet.format(f"B{self._start_row}:D{self._start_row}", {"textFormat": {"bold": True}})
+        self._sheet.format(f"D{self._start_row + 1}:E", {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
+        self._sheet.format(f"B{self._start_row}:E{self._start_row}", {"textFormat": {"bold": True}})
         summary_table = [self._column_names]
+        enter_ttm_date = (datetime(most_distant_date_observed.year, most_distant_date_observed.month, 1)
+                          + relativedelta(months=11))
         for year in reversed(range(most_distant_date_observed.year, current_time.year + 1)):
             if year == current_time.year:
                 for month in reversed(range(1, current_time.month + 1)):
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+                    spending_ttm = None
+                    if enter_ttm_date <= datetime(year, month, 1):
+                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
             elif year == most_distant_date_observed.year:
                 for month in reversed(range(most_distant_date_observed.month, 13)):
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+                    spending_ttm = None
+                    if enter_ttm_date <= datetime(year, month, 1):
+                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
             else:
                 for month in reversed(range(1, 13)):
-                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)]])
+                    spending_ttm = None
+                    if enter_ttm_date <= datetime(year, month, 1):
+                        spending_ttm = month_to_month_spending_ttm[str(year)][str(month)] / 12
+                    summary_table.append([year, month, month_to_month_spending[str(year)][str(month)], spending_ttm])
 
-        self._sheet.update(f"B{self._start_row}:D{to_1_based(len(summary_table))}", summary_table)
+        self._sheet.update(f"B{self._start_row}:E{to_1_based(len(summary_table))}", summary_table)

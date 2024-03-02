@@ -150,9 +150,11 @@ def test_adding(spreadsheet):
     for i, col_name in enumerate(INVENTORY_COL_NAMES):
         if col_name in ["Category", "Item name", "Quantity", "Life expectancy [months]"]:
             assert example_purchase_0[col_name] == row_values[i + START_ROW]
+        elif col_name == "Latest purchase":
+            assert example_purchase_0["Date of purchase [DD-MM-YYYY]"] == row_values[i + START_ROW]
         elif col_name == "Average unit value [PLN]":
             assert float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
-        elif col_name == "Depreciation [PLN]":
+        elif col_name in ["Depreciation [PLN]", "Depreciation [%]"]:
             assert 0. == float(row_values[i + START_ROW])
 
 

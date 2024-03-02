@@ -3,6 +3,7 @@ from pathlib import Path
 from autisto.spreadsheet import SpreadSheet
 from autisto.database import Database
 from autisto.utils import get_config
+from autisto.finances import FinanceModule
 
 
 class Server:
@@ -22,9 +23,10 @@ class Server:
             start = time.time()
             if not self._lock_path.exists():
                 self._lock_path.touch()
+                finance_module = FinanceModule()
                 self.db.execute_orders(self.ss.console.get_orders())
-                self.ss.inventory.summarize(self.db)
-                self.ss.spending.summarize(self.db)
+                self.ss.inventory.summarize(self.db, finance_module)
+                self.ss.spending.summarize(self.db, finance_module)
                 self._lock_path.unlink()
             time.sleep(max(0., self._refresh_period - (time.time() - start)))
 
