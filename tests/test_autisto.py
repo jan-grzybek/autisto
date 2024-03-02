@@ -1,6 +1,5 @@
 import json
 import time
-import pytest
 import random
 import string
 import gspread
@@ -20,8 +19,12 @@ class Lock:
         self._lock_path = Path("/tmp/autisto.lock")
 
     def acquire(self):
+        x = time.time()
         while self._lock_path.exists():
             time.sleep(0.5)
+            if time.time() - x > 15:
+                print("Waiting for lock to be released ...")
+                x = time.time()
         self._lock_path.touch()
 
     def release(self):
@@ -31,8 +34,7 @@ class Lock:
 lock = Lock()
 
 
-@pytest.fixture
-def spreadsheet():
+def get_spreadsheet():
     config = get_config()
     with open("client_credentials.json", "r") as client_credentials:
         gc = gspread.service_account_from_dict(json.load(client_credentials))
@@ -40,15 +42,16 @@ def spreadsheet():
     return gc.open(name)
 
 
-@pytest.mark.order(1)
 def test_sheets_creation(spreadsheet):
+    print("\nTesting sheets creating ...")
     for sheet in SHEET_NAMES:
         _ = spreadsheet.worksheet(sheet)
+    print("SUCCESS.")
     assert True
 
 
-@pytest.mark.order(3)
 def test_column_titling(spreadsheet):
+    print("\nTesting column titling ...")
     sheets_to_titles = {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}
     lock.acquire()
     for sheet, titles in sheets_to_titles.items():
@@ -57,10 +60,12 @@ def test_column_titling(spreadsheet):
         for i, col_name in enumerate(titles):
             assert row_values[i] == col_name
     lock.release()
+    print("SUCCESS.")
 
 
-@pytest.mark.order(2)
 def test_sheets_maintaining(spreadsheet):
+    print("\nTesting sheets maintaining ...")
+
     class RandomCoordinates:
         def __init__(self):
             self.row = random.randint(1, 1000)
@@ -110,6 +115,8 @@ def test_sheets_maintaining(spreadsheet):
             else:
                 assert False
 
+    print("SUCCESS.")
+
 
 def add_remove_item(console, item_data, action_token):
     row_values = []
@@ -137,8 +144,8 @@ example_purchase_0 = {
 }
 
 
-@pytest.mark.order(4)
 def test_adding(spreadsheet):
+    print("\nTesting adding items ...")
     console = spreadsheet.worksheet("Console")
     add_remove_item(console, example_purchase_0, "a")
     time.sleep(REFRESH_PERIOD + PATIENCE)
@@ -157,6 +164,7 @@ def test_adding(spreadsheet):
             assert float(example_purchase_0["Unit price [PLN]"].replace(",", ".")) == float(row_values[i + START_ROW])
         elif col_name in ["Depreciation [PLN]", "Depreciation [%]"]:
             assert 0. == float(row_values[i + START_ROW])
+    print("SUCCESS.")
 
 
 example_purchase_1 = {
@@ -167,8 +175,8 @@ example_purchase_1 = {
 }
 
 
-@pytest.mark.order(5)
 def test_appending(spreadsheet):
+    print("\nTesting appending items ...")
     console = spreadsheet.worksheet("Console")
     inventory = spreadsheet.worksheet("Inventory")
     example_purchase_1["ID"] = inventory.cell(to_1_based(START_ROW) + 2, to_1_based(START_COL)).value
@@ -179,10 +187,11 @@ def test_appending(spreadsheet):
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Quantity")).value
     assert 0. < float(inventory.cell(
         to_1_based(START_ROW) + 2, to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Depreciation [PLN]")).value)
+    print("SUCCESS.")
 
 
-@pytest.mark.order(6)
 def test_removing(spreadsheet):
+    print("\nTesting removing items ...")
     console = spreadsheet.worksheet("Console")
     inventory = spreadsheet.worksheet("Inventory")
     item_data = {
@@ -197,10 +206,11 @@ def test_removing(spreadsheet):
     total_value = float(example_purchase_0["Unit price [PLN]"].replace(",", "."))
     assert total_value == float(inventory.cell(
         to_1_based(START_ROW), to_1_based(START_COL) + INVENTORY_COL_NAMES.index("Total value [PLN]")).value)
+    print("SUCCESS.")
 
 
-@pytest.mark.order(7)
 def test_spending(spreadsheet):
+    print("\nTesting spending reporting.")
     spending = spreadsheet.worksheet("Spending")
     lock.acquire()
     now = datetime.now()
@@ -215,3 +225,15 @@ def test_spending(spreadsheet):
     total_price = int(example_purchase_1["Quantity"]) * float(example_purchase_1["Unit price [PLN]"].replace(",", "."))
     assert total_price == float(spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value)
     lock.release()
+    print("SUCCESS.")
+
+
+if __name__ == "__main__":
+    ss = get_spreadsheet()
+    test_sheets_creation(ss)
+    test_sheets_maintaining(ss)
+    test_column_titling(ss)
+    test_adding(ss)
+    test_appending(ss)
+    test_removing(ss)
+    test_spending(ss)

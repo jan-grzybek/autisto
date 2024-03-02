@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.repository }}
+
 jobs:
   test:
     runs-on: ubuntu-22.04
@@ -59,5 +62,5 @@ jobs:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
-        sudo pytest tests/ -s
-        sleep 900
+        sudo python3 tests/clean_up.py
+        sudo python3 tests/test_autisto.py
