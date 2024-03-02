@@ -16,8 +16,6 @@ jobs:
       max-parallel: 1
       matrix:
         python-version: ["3.10"]
-    env:
-      REFRESH_PERIOD: 900
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -50,6 +48,7 @@ jobs:
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
+        REFRESH_PERIOD: 900
       run: |
         echo "$CREDENTIALS" > credentials.json
         sudo autisto <<EOF
@@ -66,6 +65,7 @@ jobs:
     - name: Test
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
+        REFRESH_PERIOD: 900
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
         sudo python3 tests/test_autisto.py
