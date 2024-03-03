@@ -42,19 +42,23 @@ class FinanceModule:
                     pass
                 self._accumulated_inflation[str(year)][str(month)] = accumulated_inflation
 
-    def calc(self, document):
+    def calc_adjusted_price(self, original_price, purchase_date):
+        try:
+            adjusted_value = original_price * self._accumulated_inflation[
+                str(purchase_date.year)][str(purchase_date.month)]
+        except KeyError:
+            adjusted_value = original_price * self._accumulated_inflation["1983"]["1"]
+        return adjusted_value
+
+    def calc_adjusted_value_and_depreciation(self, document):
         total_value = 0.
         depreciation = 0.
         for i in range(document["quantity"]):
             purchase_date = datetime.strptime(document["dates_of_purchase"][i], "%d-%m-%Y")
-            try:
-                adjusted_value = document["prices"][i] * self._accumulated_inflation[
-                    str(purchase_date.year)][str(purchase_date.month)]
-            except KeyError:
-                adjusted_value = document["prices"][i] * self._accumulated_inflation["1983"]["1"]
-            total_value += adjusted_value
+            value = self.calc_adjusted_price(document["prices"][i], purchase_date)
+            total_value += value
             relative_delta = relativedelta(self._current_time, purchase_date)
             months_passed = relative_delta.years * 12 + relative_delta.months
             depreciation_ratio = min(1., months_passed / document["life_expectancy_months"])
-            depreciation += adjusted_value * depreciation_ratio
+            depreciation += value * depreciation_ratio
         return total_value, depreciation

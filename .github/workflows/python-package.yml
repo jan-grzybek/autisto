@@ -6,17 +6,22 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.repository }}
+
 jobs:
   test:
     runs-on: ubuntu-22.04
     strategy:
       max-parallel: 1
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10"]
+    env:
+      REFRESH_PERIOD: 900
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install mongoDB
@@ -30,7 +35,7 @@ jobs:
     - name: Install test dependencies
       run: |
         sudo python -m pip install --upgrade pip
-        sudo python -m pip install flake8 pytest wheel pytest-order
+        sudo python -m pip install flake8 wheel
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -45,19 +50,19 @@ jobs:
       env:
         CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
         EMAIL: ${{ secrets.AUTISTO_TEST_EMAIL }}
-        REFRESH_PERIOD: 60
       run: |
         echo "$CREDENTIALS" > credentials.json
-        # sleep $(( $(cut -c 11-11 <<< `python --version`) * $REFRESH_PERIOD / 2 ))
         sudo autisto <<EOF
         credentials.json
         $EMAIL
         $REFRESH_PERIOD
         EOF
-        sleep 5
-    - name: Test with pytest
+        sleep 15
+        sudo cat /tmp/autisto.log 
+        sudo systemctl status autisto
+    - name: Test
       env:
         CLIENT_CREDENTIALS: ${{ secrets.AUTISTO_TEST_CREDENTIALS }}
       run: |
         echo "$CLIENT_CREDENTIALS" > client_credentials.json
-        sudo pytest tests/
+        sudo REFRESH_PERIOD=$REFRESH_PERIOD python3 tests/test_autisto.py
