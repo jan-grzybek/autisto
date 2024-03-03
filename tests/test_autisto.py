@@ -244,7 +244,7 @@ def test_removing(spreadsheet):
 
 
 def test_spending(spreadsheet):
-    print("\nTesting spending reporting.")
+    print("\nTesting spending reporting ...")
     spending = spreadsheet.worksheet("Spending")
     lock.acquire()
     now = datetime.now()
@@ -260,14 +260,16 @@ def test_spending(spreadsheet):
     offset = (now.year - date.year) * 12 + now.month - date.month
     total_price = (int(example_purchase_1["Quantity"]) *
                    float(example_purchase_1["Unit price [PLN]"].replace(",", ".")))
-    adjusted_price = round(finances.calc_adjusted_price(total_price, date), 2)
-    assert adjusted_price == float(
+    adjusted_price = finances.calc_adjusted_price(total_price, date)
+    assert round(adjusted_price, 2) == float(
         spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 2).value.replace(",", ""))
 
     date = datetime(date.year, date.month, 1) + relativedelta(months=11)
     offset = (now.year - date.year) * 12 + now.month - date.month
-    assert adjusted_price == float(
+    adjusted_price_ttm = round(adjusted_price / 12, 2)
+    cell_value = float(
         spending.cell(to_1_based(START_ROW) + 1 + offset, to_1_based(START_COL) + 3).value.replace(",", ""))
+    assert adjusted_price_ttm == cell_value, f"{adjusted_price_ttm} != {cell_value}"
     lock.release()
     print("SUCCESS.")
 
