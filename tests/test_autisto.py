@@ -308,6 +308,8 @@ if __name__ == "__main__":
         time.sleep(timeout)
     except TimeoutError:
         assert ss is not None
+    if finances.error is not None:
+        raise finances.error
     run_test(test_sheets_creation, ss)
     run_test(test_sheets_maintaining, ss)
     run_test(test_column_titling, ss)
