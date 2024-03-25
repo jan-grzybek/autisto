@@ -43,8 +43,8 @@ class FinanceModule:
             try:
                 month_over_month_inflation_data[two_months_ago.year][two_months_ago.month]
             except KeyError:
-                self.error = f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} " \
-                f"is missing in GUS .csv file available at {URL}"
+                self.error = KeyError(f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} " \
+                                      f"is missing in GUS .csv file available at {URL}")
         return month_over_month_inflation_data
 
     def _calc_accumulated_inflation(self, month_over_month_inflation_data):
