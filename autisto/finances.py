@@ -29,18 +29,22 @@ class FinanceModule:
                     inflation_rate = float(row[5].replace(",", ".")) / 100
                 except ValueError:
                     continue
-                if row[3] in month_over_month_inflation_data.keys():
-                    month_over_month_inflation_data[row[3]][row[4]] = inflation_rate
-                else:
-                    month_over_month_inflation_data[row[3]] = {row[4]: float(row[5].replace(",", ".")) / 100}
+                try:
+                      if int(row[3]) in month_over_month_inflation_data.keys():
+                          month_over_month_inflation_data[int(row[3])][int(row[4])] = inflation_rate
+                      else:
+                          month_over_month_inflation_data[int(row[3])] = {int(row[4]): float(row[5].replace(",", ".")) / 100}
+                except Exception as e:
+                      self.error = e
+                      return {}
 
         two_months_ago = datetime.now() - relativedelta(months=2)
         if self.error is None:
             try:
                 month_over_month_inflation_data[two_months_ago.year][two_months_ago.month]
             except KeyError:
-                self.error = f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} " \
-                f"is missing in GUS .csv file available at {URL}"
+                self.error = KeyError(f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} " \
+                                      f"is missing in GUS .csv file available at {URL}")
         return month_over_month_inflation_data
 
     def _calc_accumulated_inflation(self, month_over_month_inflation_data):
@@ -48,20 +52,20 @@ class FinanceModule:
         self._accumulated_inflation = {}
         accumulated_inflation = 1.
         for year in reversed(range(1982, self._current_time.year + 1)):
-            self._accumulated_inflation[str(year)] = {}
+            self._accumulated_inflation[year] = {}
             for month in reversed(range(1, 13)):
                 try:
-                    accumulated_inflation *= month_over_month_inflation_data[str(year)][str(month)]
+                    accumulated_inflation *= month_over_month_inflation_data[year][month]
                 except KeyError:
                     pass
-                self._accumulated_inflation[str(year)][str(month)] = accumulated_inflation
+                self._accumulated_inflation[year][month] = accumulated_inflation
 
     def calc_adjusted_price(self, original_price, purchase_date):
         try:
             adjusted_value = original_price * self._accumulated_inflation[
-                str(purchase_date.year)][str(purchase_date.month)]
+                purchase_date.year][purchase_date.month]
         except KeyError:
-            adjusted_value = original_price * self._accumulated_inflation["1983"]["1"]
+            adjusted_value = original_price * self._accumulated_inflation[1983][1]
         return adjusted_value
 
     def calc_adjusted_value_and_depreciation(self, document):
