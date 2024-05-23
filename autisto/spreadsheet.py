@@ -1,6 +1,8 @@
 import gspread
+import urllib.request
 from bson.errors import InvalidId
 from autisto.utils import *
+from autisto.finances import FinanceModule
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -49,11 +51,20 @@ class Console:
         self.db = database
 
     def clean_up(self, orders_only=False):
+        url_value = self._sheet.cell(self._start_row, 3).value
+        if url_value is not None:
+            try:
+                urllib.request.urlopen(url_value)
+                FinanceModule.url = url_value
+            except Exception as e:
+                FinanceModule.url = str(e)
         if not orders_only:
-            self._sheet.batch_clear(["A1:A", "A1:Z2", "K1:Z"])
+            self._sheet.batch_clear(["A1:A", "A1:Z3", "K1:Z"])
             self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
-            self._sheet.format(f"B{self._start_row}:Z{self._start_row}", {"textFormat": {"bold": True}})
-            self._sheet.update([self._column_names], f"B{self._start_row}:L{self._start_row}")
+            self._sheet.format(f"B{self._start_row}:Z{self._start_row+1}", {"textFormat": {"bold": True}})
+            self._sheet.update([["URL to .csv file with monthly inflation data (available at GUS website):",
+                                 FinanceModule.url] + [None for _ in range(len(self._column_names)-2)],
+                                self._column_names], f"B{self._start_row}:L{self._start_row+1}")
         for order in self._orders:
             self._sheet.batch_clear([f"B{order.row}:Z{order.row}"])
         self._orders = []
@@ -62,13 +73,13 @@ class Console:
         return self._start_col + self._column_names.index(col_name)
 
     def _get_ready_rows(self):
-        confirmation_tokens = self._sheet.col_values(to_1_based(self._get_col_index("Done? <Y>")))[self._start_row:]
+        confirmation_tokens = self._sheet.col_values(to_1_based(self._get_col_index("Done? <Y>")))[self._start_row+1:]
         ready_rows = []
         for i, token in enumerate(confirmation_tokens):
             if token in ["y", "yes", "Y", "YES"]:
-                ready_rows.append(self._start_row + i)
+                ready_rows.append(self._start_row + i + 1)
             elif token != "":
-                self._sheet.update_cell(self._start_row + i + 1, to_1_based(self._get_col_index("Status")),
+                self._sheet.update_cell(self._start_row + i + 2, to_1_based(self._get_col_index("Status")),
                                         f"Wrong confirmation token: '{confirmation_tokens[i]}' "
                                         f"(should be 'Y' instead)")
         return ready_rows

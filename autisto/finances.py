@@ -4,18 +4,18 @@ import urllib.request
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-URL = "https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/4741/1/1/miesieczne_wskazniki_cen_" \
-      "towarow_i_uslug_konsumpcyjnych_od_1982_roku_3.csv"
-
 
 class FinanceModule:
+    url = ("https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/4741/1/1/"
+           "miesieczne_wskazniki_cen_towarow_i_uslug_konsumpcyjnych_od_1982_roku_3.csv")
+
     def __init__(self):
         self.error = None
         self._calc_accumulated_inflation(self._extract_month_over_month_inflation(self._load_inflation_data()))
 
     def _load_inflation_data(self):
         try:
-            response = urllib.request.urlopen(URL)
+            response = urllib.request.urlopen(FinanceModule.url)
             return csv.reader([line.decode("windows-1250") for line in response.readlines()], delimiter=";")
         except Exception as e:
             self.error = e
@@ -30,21 +30,23 @@ class FinanceModule:
                 except ValueError:
                     continue
                 try:
-                      if int(row[3]) in month_over_month_inflation_data.keys():
-                          month_over_month_inflation_data[int(row[3])][int(row[4])] = inflation_rate
-                      else:
-                          month_over_month_inflation_data[int(row[3])] = {int(row[4]): float(row[5].replace(",", ".")) / 100}
+                    if int(row[3]) in month_over_month_inflation_data.keys():
+                        month_over_month_inflation_data[int(row[3])][int(row[4])] = inflation_rate
+                    else:
+                        month_over_month_inflation_data[int(row[3])] = {
+                            int(row[4]): float(row[5].replace(",", ".")) / 100}
                 except Exception as e:
-                      self.error = e
-                      return {}
+                    self.error = e
+                    return {}
 
         two_months_ago = datetime.now() - relativedelta(months=2)
         if self.error is None:
             try:
                 month_over_month_inflation_data[two_months_ago.year][two_months_ago.month]
             except KeyError:
-                self.error = KeyError(f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} " \
-                                      f"is missing in GUS .csv file available at {URL}")
+                self.error = KeyError(
+                    f"Error: inflation data for {two_months_ago.strftime('%B')} {two_months_ago.year} "
+                    f"is missing in GUS .csv file available at {FinanceModule.url}")
         return month_over_month_inflation_data
 
     def _calc_accumulated_inflation(self, month_over_month_inflation_data):
