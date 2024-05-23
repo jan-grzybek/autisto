@@ -109,7 +109,7 @@ def test_sheets_maintaining(spreadsheet):
                 elif cell_coordinates.col == 1 or to_1_based(START_COL) + len(
                         CONSOLE_COL_NAMES[:-2]) <= cell_coordinates.col:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
-                elif cell_coordinates.row != 2:
+                elif cell_coordinates.row not in [2, 3]:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == litter[i]
             elif sheet == "Inventory":
                 if cell_coordinates.row == 1 or to_1_based(START_ROW) + 2 <= cell_coordinates.row:
