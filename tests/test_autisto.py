@@ -66,7 +66,7 @@ def test_column_titling(spreadsheet):
     sheets_to_titles = {"Console": CONSOLE_COL_NAMES, "Inventory": INVENTORY_COL_NAMES, "Spending": SPENDING_COL_NAMES}
     lock.acquire()
     for sheet, titles in sheets_to_titles.items():
-        start_row = to_1_based(START_ROW) + 1 if sheet == "Inventory" else to_1_based(START_ROW)
+        start_row = to_1_based(START_ROW) + 1 if sheet != "Spending" else to_1_based(START_ROW)
         row_values = spreadsheet.worksheet(sheet).row_values(start_row)[START_COL:]
         for i, col_name in enumerate(titles):
             assert row_values[i] == col_name, f"{row_values[i]} != {col_name}"
@@ -109,7 +109,7 @@ def test_sheets_maintaining(spreadsheet):
                 elif cell_coordinates.col == 1 or to_1_based(START_COL) + len(
                         CONSOLE_COL_NAMES[:-2]) <= cell_coordinates.col:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value is None
-                elif cell_coordinates.row != 2:
+                elif cell_coordinates.row not in [2, 3]:
                     assert worksheet.cell(cell_coordinates.row, cell_coordinates.col).value == litter[i]
             elif sheet == "Inventory":
                 if cell_coordinates.row == 1 or to_1_based(START_ROW) + 2 <= cell_coordinates.row:
