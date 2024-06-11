@@ -266,7 +266,10 @@ class InventorySheet:
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [[None for _ in range(len(self._column_names))], self._column_names]
-        summary_table[0][0] = str(finance_module.error)
+        if finance_module.error is None:
+            summary_table[0][0] = f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        else:
+            summary_table[0][0] = str(finance_module.error)
         summary_table[0][len(self._column_names) - 4:len(self._column_names) - 1] = ["SUM=", 0., 0.]
         for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc_adjusted_value_and_depreciation(document)
