@@ -16,7 +16,10 @@ CONSOLE_COL_NAMES = ["Action <ADD/REMOVE>", "ID", "Quantity", "Date of purchase 
 INVENTORY_COL_NAMES = ["ID", "Category", "Item name", "Latest purchase", "Quantity", "Life expectancy [months]",
                        "Average unit value [PLN]", "Total value [PLN]", "Depreciation [PLN]", "Depreciation [%]"]
 SPENDING_COL_NAMES = ["Year", "Month", "Amount spent [PLN, inflation-adjusted]",
-                      "Amount spent TTM per month [PLN, inflation-adjusted]"]
+                      "Amount spent TTM per month [PLN, inflation-adjusted]",
+                      "Amount spent T36M per month [PLN, inflation-adjusted]",
+                      "Amount spent T60M per month [PLN, inflation-adjusted]",
+                      "Amount spent T120M per month [PLN, inflation-adjusted]"]
 
 
 class SpreadSheet:
@@ -263,7 +266,10 @@ class InventorySheet:
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
         self._sheet.format(f"B{self._start_row}:Z{self._start_row + 1}", {"textFormat": {"bold": True}})
         summary_table = [[None for _ in range(len(self._column_names))], self._column_names]
-        summary_table[0][0] = str(finance_module.error)
+        if finance_module.error is None:
+            summary_table[0][0] = f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        else:
+            summary_table[0][0] = str(finance_module.error)
         summary_table[0][len(self._column_names) - 4:len(self._column_names) - 1] = ["SUM=", 0., 0.]
         for document in database.get_assets(sort_by_latest=True):
             total_value, depreciation = finance_module.calc_adjusted_value_and_depreciation(document)
@@ -297,12 +303,21 @@ class SpendingSheet:
         current_time = datetime.now()
         month_to_month_spending = {}
         month_to_month_spending_ttm = {}
+        month_to_month_spending_t36m = {}
+        month_to_month_spending_t60m = {}
+        month_to_month_spending_t120m = {}
         for year in range(BEGINNING_OF_TIME.year, current_time.year + 1):
             month_to_month_spending[str(year)] = {}
             month_to_month_spending_ttm[str(year)] = {}
+            month_to_month_spending_t36m[str(year)] = {}
+            month_to_month_spending_t60m[str(year)] = {}
+            month_to_month_spending_t120m[str(year)] = {}
             for month in range(1, 13):
                 month_to_month_spending[str(year)][str(month)] = 0.
                 month_to_month_spending_ttm[str(year)][str(month)] = 0.
+                month_to_month_spending_t36m[str(year)][str(month)] = 0.
+                month_to_month_spending_t60m[str(year)][str(month)] = 0.
+                month_to_month_spending_t120m[str(year)][str(month)] = 0.
 
         most_distant_date_observed = current_time
         for collection in [database.get_assets(), database.get_decommissioned()]:
@@ -313,41 +328,83 @@ class SpendingSheet:
                         most_distant_date_observed = purchase_date
                     adjusted_price = finance_module.calc_adjusted_price(document["prices"][i], purchase_date)
                     month_to_month_spending[str(purchase_date.year)][str(purchase_date.month)] += adjusted_price
-                    for j in range(12):
+                    for j in range(120):
                         target_date = purchase_date + relativedelta(months=j)
                         try:
-                            month_to_month_spending_ttm[str(target_date.year)][str(target_date.month)] += adjusted_price
+                            if j < 12:
+                                month_to_month_spending_ttm[str(target_date.year)][str(target_date.month)] += adjusted_price
+                            if j < 36:
+                                month_to_month_spending_t36m[str(target_date.year)][str(target_date.month)] += adjusted_price
+                            if j < 60:
+                                month_to_month_spending_t60m[str(target_date.year)][str(target_date.month)] += adjusted_price
+                            month_to_month_spending_t120m[str(target_date.year)][str(target_date.month)] += adjusted_price
                         except KeyError:
                             break
 
         self._sheet.clear()
         self._sheet.format("A1:Z", {"textFormat": {"bold": False}})
-        self._sheet.format(f"D{self._start_row + 1}:E", {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
-        self._sheet.format(f"B{self._start_row}:E{self._start_row}", {"textFormat": {"bold": True}})
+        self._sheet.format(f"D{self._start_row + 1}:H", {"numberFormat": {"type": "NUMBER", "pattern": "#,##0.00"}})
+        self._sheet.format(f"B{self._start_row}:H{self._start_row}", {"textFormat": {"bold": True}})
         summary_table = [self._column_names]
         enter_ttm_date = (datetime(most_distant_date_observed.year, most_distant_date_observed.month, 1)
                           + relativedelta(months=11))
+        enter_t36m_date = (datetime(most_distant_date_observed.year, most_distant_date_observed.month, 1)
+                          + relativedelta(months=35))
+        enter_t60m_date = (datetime(most_distant_date_observed.year, most_distant_date_observed.month, 1)
+                          + relativedelta(months=59))
+        enter_t120m_date = (datetime(most_distant_date_observed.year, most_distant_date_observed.month, 1)
+                          + relativedelta(months=119))
         for year in reversed(range(most_distant_date_observed.year, current_time.year + 1)):
             if year == current_time.year:
                 for month in reversed(range(1, current_time.month + 1)):
                     spending_ttm = None
+                    spending_t36m = None
+                    spending_t60m = None
+                    spending_t120m = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
+                    if enter_t36m_date <= datetime(year, month, 1):
+                        spending_t36m = round(month_to_month_spending_t36m[str(year)][str(month)] / 36, 2)
+                    if enter_t60m_date <= datetime(year, month, 1):
+                        spending_t60m = round(month_to_month_spending_t60m[str(year)][str(month)] / 60, 2)
+                    if enter_t120m_date <= datetime(year, month, 1):
+                        spending_t120m = round(month_to_month_spending_t120m[str(year)][str(month)] / 120, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), 
+                         spending_ttm, spending_t36m, spending_t60m, spending_t120m])
             elif year == most_distant_date_observed.year:
                 for month in reversed(range(most_distant_date_observed.month, 13)):
                     spending_ttm = None
+                    spending_t36m = None
+                    spending_t60m = None
+                    spending_t120m = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
+                    if enter_t36m_date <= datetime(year, month, 1):
+                        spending_t36m = round(month_to_month_spending_t36m[str(year)][str(month)] / 36, 2)
+                    if enter_t60m_date <= datetime(year, month, 1):
+                        spending_t60m = round(month_to_month_spending_t60m[str(year)][str(month)] / 60, 2)
+                    if enter_t120m_date <= datetime(year, month, 1):
+                        spending_t120m = round(month_to_month_spending_t120m[str(year)][str(month)] / 120, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), 
+                         spending_ttm, spending_t36m, spending_t60m, spending_t120m])
             else:
                 for month in reversed(range(1, 13)):
                     spending_ttm = None
+                    spending_t36m = None
+                    spending_t60m = None
+                    spending_t120m = None
                     if enter_ttm_date <= datetime(year, month, 1):
                         spending_ttm = round(month_to_month_spending_ttm[str(year)][str(month)] / 12, 2)
+                    if enter_t36m_date <= datetime(year, month, 1):
+                        spending_t36m = round(month_to_month_spending_t36m[str(year)][str(month)] / 36, 2)
+                    if enter_t60m_date <= datetime(year, month, 1):
+                        spending_t60m = round(month_to_month_spending_t60m[str(year)][str(month)] / 60, 2)
+                    if enter_t120m_date <= datetime(year, month, 1):
+                        spending_t120m = round(month_to_month_spending_t120m[str(year)][str(month)] / 120, 2)
                     summary_table.append(
-                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), spending_ttm])
+                        [year, month, round(month_to_month_spending[str(year)][str(month)], 2), 
+                         spending_ttm, spending_t36m, spending_t60m, spending_t120m])
 
-        self._sheet.update(summary_table, f"B{self._start_row}:E{to_1_based(len(summary_table))}")
+        self._sheet.update(summary_table, f"B{self._start_row}:H{to_1_based(len(summary_table))}")
