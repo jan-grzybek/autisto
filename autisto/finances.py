@@ -7,8 +7,8 @@ from dateutil.relativedelta import relativedelta
 
 
 class FinanceModule:
-    url = (f"https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/4741/1/1/miesieczne_wskazniki_"
-           "cen_towarow_i_uslug_konsumpcyjnych_od_1982_roku.csv?{int(time.time())}")
+    url = ("https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/4741/1/1/miesieczne_wskazniki_"
+           f"cen_towarow_i_uslug_konsumpcyjnych_od_1982_roku.csv?{int(time.time())}")
 
     def __init__(self):
         self.error = None
