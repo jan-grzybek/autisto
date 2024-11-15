@@ -29,6 +29,7 @@ class FinanceModule:
     def _extract_month_over_month_inflation(self, raw_inflation_data):
         month_over_month_inflation_data = {}
         for row in raw_inflation_data:
+            print(row)
             if "Poprzedni miesiąc = 100" == row[2]:
                 try:
                     inflation_rate = float(row[5].replace(",", ".")) / 100
