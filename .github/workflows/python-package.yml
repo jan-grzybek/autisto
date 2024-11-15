@@ -1,4 +1,4 @@
-name: Python package
+name: Autisto setup & functionality test
 
 on:
   push:
