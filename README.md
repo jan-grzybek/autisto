@@ -1,4 +1,5 @@
 # Autisto
+![CI tests](https://github.com/github/docs/actions/workflows/test.yml/badge.svg)
 ## Installation
 ```
 wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc |  gpg --dearmor | sudo tee /usr/share/keyrings/mongodb.gpg > /dev/null
