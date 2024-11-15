@@ -16,7 +16,8 @@ class FinanceModule:
 
     def _load_inflation_data(self):
         try:
-            response = urllib.request.urlopen(FinanceModule.url)
+            request = urllib.request.Request(FinanceModule.url, headers={"Cache-Control": "no-cache"})
+            response = urllib.request.urlopen(request)
             try:
                 return csv.reader([line.decode("windows-1250") for line in response.readlines()], delimiter=";")
             except UnicodeDecodeError:
