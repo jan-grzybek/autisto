@@ -1,5 +1,4 @@
 import csv
-import time
 import urllib.error
 import urllib.request
 from datetime import datetime
@@ -8,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 class FinanceModule:
     url = ("https://stat.gov.pl/download/gfx/portalinformacyjny/pl/defaultstronaopisowa/4741/1/1/miesieczne_wskazniki_"
-           f"cen_towarow_i_uslug_konsumpcyjnych_od_1982_roku.csv?{int(time.time())}")
+           "cen_towarow_i_uslug_konsumpcyjnych_od_1982_roku.csv")
 
     def __init__(self):
         self.error = None
@@ -16,11 +15,11 @@ class FinanceModule:
 
     def _load_inflation_data(self):
         try:
-            request = urllib.request.Request(FinanceModule.url, headers={"Cache-Control": "no-cache"})
-            response = urllib.request.urlopen(request)
             try:
+                response = urllib.request.urlopen(FinanceModule.url)
                 return csv.reader([line.decode("windows-1250") for line in response.readlines()], delimiter=";")
             except UnicodeDecodeError:
+                response = urllib.request.urlopen(FinanceModule.url)
                 return csv.reader([line.decode("cp852") for line in response.readlines()], delimiter=";")
         except Exception as e:
             self.error = e
